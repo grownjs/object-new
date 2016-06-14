@@ -68,8 +68,10 @@ describe 'def()', ->
         def('MyClass', @)
 
         @MyClass.defn('dec', 0)
+        @MyClass.defn('str', -> 'OK')
 
         test = @MyClass.new()
+        expect(test.str).toEqual 'OK'
         expect(-> test.dec--).toThrow()
 
         expect(test.dec).toEqual 0
@@ -120,3 +122,27 @@ describe 'def()', ->
       expect(@FancyClass.new().prop).not.toEqual @FancyClass.new().prop
       expect(@FancyClass.new('1').test()).toEqual '123'
       expect(count).toEqual 3
+
+    it 'should support private data access through closure definitions', ->
+      def('SomeClass', @)(->
+        count = 0
+
+        # public accesor (read-only)
+        @defn 'count', -> count
+
+        @def 'inc', (nth = 1) ->
+          count++ while nth--
+          @
+        @def 'get', ->
+          count
+      )
+
+      c = @SomeClass.new()
+
+      expect(c.get()).toEqual 0
+      expect(c.count).toEqual 0
+      expect(-> c.count++).toThrow()
+
+      c.inc(2)
+      expect(c.get()).toEqual 2
+      expect(c.count).toEqual 2
