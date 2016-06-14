@@ -97,3 +97,26 @@ describe 'def()', ->
 
       expect(@MyPlugin.new().type).toEqual 'plugin'
       expect(@MyPlugin.new().fun()).toEqual 'OSOM'
+
+    it 'should support multiple constructors through definitions', ->
+      count = 0
+
+      def('HooksSupport', @)({
+        constructor: ->
+          count++
+          @prop = Math.random()
+        prototype:
+          hooks: true
+      })
+
+      def(@HooksSupport, 'FancyClass', @)({
+        constructor: (@prefix) ->
+          @prefix += '2' if @hooks
+        prototype:
+          test: ->
+            @prefix + '3'
+      })
+
+      expect(@FancyClass.new().prop).not.toEqual @FancyClass.new().prop
+      expect(@FancyClass.new('1').test()).toEqual '123'
+      expect(count).toEqual 3
