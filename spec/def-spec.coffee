@@ -73,3 +73,27 @@ describe 'def()', ->
         expect(-> test.dec--).toThrow()
 
         expect(test.dec).toEqual 0
+
+  describe 'inheritance', ->
+    it 'will use composition for the initial definition', ->
+      def('Parent', @)({ prototype: { foo: 'bar' } })
+      def('Other', @)({ prototype: { extra: (str) -> '(' + str() + ')' } })
+      def([@Parent, @Other], 'Children', @)({ prototype: { baz: 'buzz', test: -> @foo + '!!' } })
+
+      c = @Children.new()
+      expect(c.foo).toEqual 'bar'
+      expect(c.baz).toEqual 'buzz'
+      expect(c.extra(c.test)).toEqual '(bar!!)'
+
+    it 'will extends existing definitions on the next calls', ->
+      def('PluginBase', @)({ prototype: { type: 'plugin' } })
+      def(@PluginBase, 'MyPlugin', @)
+
+      expect(@MyPlugin.new().type).toEqual 'plugin'
+      expect(@MyPlugin.new().fun).toBeUndefined()
+
+      def('PluginMixin', @)({ prototype: { fun: -> 'OSOM' }  })
+      def(@PluginMixin, 'PluginBase', @)
+
+      expect(@MyPlugin.new().type).toEqual 'plugin'
+      expect(@MyPlugin.new().fun()).toEqual 'OSOM'
