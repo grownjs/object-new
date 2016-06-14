@@ -2,12 +2,12 @@
   "name": "def-module",
   "version": "0.0.1",
   "description": "Module madness!",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
-    "dev": "jasmine-node spec --coffee --verbose --autoTest --watchFolders index.js",
-    "dev:lint": "eslint index.js",
+    "dev": "jasmine-node spec --coffee --verbose --autoTest --watchFolders lib",
+    "dev:lint": "eslint lib",
     "dev:spec": "jasmine-node spec --coffee --noStackTrace --captureExceptions",
-    "cover": "istanbul cover --root index.js --x '**/spec/**' -- jasmine-node --coffee spec",
+    "cover": "istanbul cover --root lib --x '**/spec/**' -- jasmine-node --coffee spec",
     "cover:up": "codecov --file=coverage/lcov.info --disable=gcov -e TRAVIS_NODE_VERSION",
     "test": "npm run dev:lint && npm run dev:spec"
   },
