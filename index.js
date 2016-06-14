@@ -3,6 +3,9 @@ function set(obj, prop, value) {
     Object.defineProperty(obj, prop, {
       get: function () {
         return value;
+      },
+      set: function () {
+        throw new Error('cannot redefine `' + prop + '`');
       }
     });
   } else {
@@ -24,7 +27,7 @@ function wrap(fn) {
       return fn;
     },
     defn: function (prop, value) {
-      return set(fn, prop, value);
+      return set(fn.prototype, prop, value);
     }
   });
 }
