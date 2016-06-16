@@ -134,7 +134,7 @@ describe 'def()', ->
       expect(@MyPlugin.new().fun).toBeUndefined()
 
       def('PluginMixin', @)({ prototype: { fun: -> 'OSOM' }  })
-      def(@PluginMixin, 'PluginBase', @)
+      def(@PluginMixin, @PluginBase, @)
 
       expect(@MyPlugin.new().type).toEqual 'plugin'
       expect(@MyPlugin.new().fun()).toEqual 'OSOM'
