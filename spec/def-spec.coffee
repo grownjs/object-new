@@ -99,6 +99,19 @@ describe 'def()', ->
         expect(@Car.new().hasWindows).toBeUndefined()
 
   describe 'inheritance', ->
+    it 'can define static properties', ->
+      def('Container', @)({ test: 'value' })
+      expect(@Container.test).toEqual 'value'
+
+    it 'can inherit static properties', ->
+      def('MainClass', @)({ foo: 'bar' })
+      def('SubClass', @)({ baz: 'buzz' })
+      def([@MainClass, @SubClass], 'ThirdClass', @)({ baz: 'bazzinga!' });
+
+      expect(@SubClass.baz).toEqual 'buzz'
+      expect(@ThirdClass.foo).toEqual 'bar'
+      expect(@ThirdClass.baz).toEqual 'bazzinga!'
+
     it 'will use composition for the initial definition', ->
       def('Parent', @)({ prototype: { foo: 'bar' } })
       def('Other', @)({ prototype: { extra: (str) -> '(' + str() + ')' } })
