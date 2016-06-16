@@ -168,3 +168,19 @@ describe 'def()', ->
       c.inc(2)
       expect(c.get()).toEqual 2
       expect(c.count).toEqual 2
+
+    it 'should be able to create objects from factories or through the new operator', ->
+      def('BaseClass', @)({ prototype: { foo: 'bar' } })
+      def(@BaseClass, 'ChildClass', @)({ prototype: { baz: 'buzz' } })
+      @ChildClass.defn('candy', 'does nothing')
+
+      a = @ChildClass.new()
+      b = new @ChildClass()
+
+      expect(a.foo).toEqual 'bar'
+      expect(a.baz).toEqual 'buzz'
+      expect(a.candy).toEqual 'does nothing'
+
+      expect(b.foo).toEqual 'bar'
+      expect(b.baz).toEqual 'buzz'
+      expect(b.candy).toEqual 'does nothing'
