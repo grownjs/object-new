@@ -36,6 +36,10 @@ describe 'def()', ->
       @A({ foo: 'bar' })
       expect(@A.foo).toEqual 'bar'
 
+    it 'should provide the registered definition name', ->
+      def('MyClass', @)({ constructor: -> @className = @constructor.name })
+      expect(@MyClass.new().className).toEqual 'MyClass'
+
   describe 'methods', ->
     describe 'new()', ->
       beforeEach ->
