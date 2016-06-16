@@ -63,6 +63,18 @@ describe 'def()', ->
 
         expect(test.inc).toEqual 1
 
+      it 'can inherit mutable properties', ->
+        def('Animal', @)
+        @Animal.def 'canWalk', -> true
+
+        def(@Animal, 'Cat', @)
+        @Cat.def 'canJump', -> true
+
+        test = @Cat.new()
+        expect(test.canWalk()).toBeTruthy()
+        expect(test.canJump()).toBeTruthy()
+        expect(@Animal.new().canJump).toBeUndefined()
+
     describe 'defn()', ->
       it 'can define immutable properties', ->
         def('MyClass', @)
@@ -75,6 +87,16 @@ describe 'def()', ->
         expect(-> test.dec--).toThrow()
 
         expect(test.dec).toEqual 0
+
+      it 'cannot inherit immutable properties', ->
+        def('Vehicle', @)
+        @Vehicle.defn 'hasWindows', true
+
+        def(@Vehicle, 'Car', @)
+        @Car.defn 'hasDoors', true
+
+        expect(@Car.new().hasDoors).toBeTruthy()
+        expect(@Car.new().hasWindows).toBeUndefined()
 
   describe 'inheritance', ->
     it 'will use composition for the initial definition', ->
