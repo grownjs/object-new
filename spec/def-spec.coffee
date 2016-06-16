@@ -36,8 +36,9 @@ describe 'def()', ->
       @A({ foo: 'bar' })
       expect(@A.foo).toEqual 'bar'
 
-    it 'should provide the registered definition name', ->
-      expect(def('MyClass', @).new().constructor.name).toEqual 'MyClass'
+    if parseFloat(process.version.substr(1)) > 1
+      it 'should provide the registered definition name', ->
+        expect(def('MyClass', @).new().constructor.name).toEqual 'MyClass'
 
   describe 'methods', ->
     describe 'new()', ->
@@ -91,7 +92,7 @@ describe 'def()', ->
 
         expect(test.dec).toEqual 0
 
-      it 'cannot inherit immutable properties', ->
+      it 'can inherit immutable properties', ->
         def('Vehicle', @)
         @Vehicle.defn 'hasWindows', true
 
@@ -99,7 +100,7 @@ describe 'def()', ->
         @Car.defn 'hasDoors', true
 
         expect(@Car.new().hasDoors).toBeTruthy()
-        expect(@Car.new().hasWindows).toBeUndefined()
+        expect(@Car.new().hasWindows).toBeTruthy()
 
   describe 'inheritance', ->
     it 'can define static properties', ->
