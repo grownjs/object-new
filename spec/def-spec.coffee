@@ -56,52 +56,6 @@ describe 'def()', ->
         expect(typeof @MyClass.new).toEqual 'function'
         expect(@MyClass.new().instanceProperty).toEqual 'bar'
 
-    describe 'def()', ->
-      it 'can define mutable properties', ->
-        def('MyClass', @)
-
-        @MyClass.def('inc', 0)
-
-        test = @MyClass.new()
-        test.inc++
-
-        expect(test.inc).toEqual 1
-
-      it 'can inherit mutable properties', ->
-        def('Animal', @)
-        @Animal.def 'canWalk', -> true
-
-        def(@Animal, 'Cat', @)
-        @Cat.def 'canJump', -> true
-
-        test = @Cat.new()
-        expect(test.canWalk()).toBeTruthy()
-        expect(test.canJump()).toBeTruthy()
-        expect(@Animal.new().canJump).toBeUndefined()
-
-    describe 'defn()', ->
-      it 'can define immutable properties', ->
-        def('MyClass', @)
-
-        @MyClass.defn('dec', 0)
-        @MyClass.defn('str', -> 'OK')
-
-        test = @MyClass.new()
-        expect(test.str).toEqual 'OK'
-        expect(-> test.dec--).toThrow()
-
-        expect(test.dec).toEqual 0
-
-      it 'can inherit immutable properties', ->
-        def('Vehicle', @)
-        @Vehicle.defn 'hasWindows', true
-
-        def(@Vehicle, 'Car', @)
-        @Car.defn 'hasDoors', true
-
-        expect(@Car.new().hasDoors).toBeTruthy()
-        expect(@Car.new().hasWindows).toBeTruthy()
-
   describe 'inheritance', ->
     it 'can define static properties', ->
       def('Container', @)({ test: 'value' })
@@ -162,34 +116,10 @@ describe 'def()', ->
       expect(@FancyClass.new('1').test()).toEqual '123'
       expect(count).toEqual 3
 
-    it 'should support private data access through closure definitions', ->
-      def('SomeClass', @)(->
-        count = 0
-
-        # public accesor (read-only)
-        @defn 'count', -> count
-
-        @def 'inc', (nth = 1) ->
-          count++ while nth--
-          @
-        @def 'get', ->
-          count
-      )
-
-      c = @SomeClass.new()
-
-      expect(c.get()).toEqual 0
-      expect(c.count).toEqual 0
-      expect(-> c.count++).toThrow()
-
-      c.inc(2)
-      expect(c.get()).toEqual 2
-      expect(c.count).toEqual 2
-
     it 'should be able to create objects from factories or through the new operator', ->
       def('BaseClass', @)({ prototype: { foo: 'bar' } })
       def(@BaseClass, 'ChildClass', @)({ prototype: { baz: 'buzz' } })
-      @ChildClass.defn('candy', 'does nothing')
+      @ChildClass.use({ candy: 'does nothing' })
 
       a = @ChildClass.new()
       b = new @ChildClass()
