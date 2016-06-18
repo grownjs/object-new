@@ -104,7 +104,12 @@ describe 'def()', ->
           hooks: true
       })
 
-      def(@HooksSupport, 'FancyClass', @)({
+      def(@HooksSupport, 'ExtraSupport', @)({
+        constructor: ->
+          count++
+      })
+
+      def(@ExtraSupport, 'FancyClass', @)({
         constructor: (@prefix) ->
           @prefix += '2' if @hooks
         prototype:
@@ -114,7 +119,7 @@ describe 'def()', ->
 
       expect(@FancyClass.new().prop).not.toEqual @FancyClass.new().prop
       expect(@FancyClass.new('1').test()).toEqual '123'
-      expect(count).toEqual 3
+      expect(count).toEqual 3 * 2
 
     it 'should be able to create objects from factories or through the new operator', ->
       def('BaseClass', @)({ prototype: { foo: 'bar' } })
