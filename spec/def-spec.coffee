@@ -38,7 +38,9 @@ describe 'def()', ->
 
     if parseFloat(process.version.substr(1)) > 1
       it 'should provide the registered definition name', ->
-        expect(def('MyClass', @).new().constructor.name).toEqual 'MyClass'
+        def('MyClass', @)
+        expect(@MyClass.name).toEqual 'MyClass'
+        expect(def('MyClass', @).new().constructor).toBeUndefined()
 
   describe 'methods', ->
     describe 'new()', ->
