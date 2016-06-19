@@ -1,8 +1,17 @@
 var Plug = require('./core');
 
+// custom logger, uncomment and see ;)
+Plug('Logger')({
+  prototype: {
+    log() {
+      console.log.apply(console.log, ['info:'].concat(Array.prototype.slice.call(arguments)));
+    }
+  }
+});
+
 Plug('MyConn')({
   constructor() {
-    this.log('#my');
+    this.log('my');
   },
   prototype: {
     router(routeMappings) {
@@ -10,10 +19,7 @@ Plug('MyConn')({
         .get('/', 'Home.index');
     }
   }
-}).use([
-  Plug.Conn,
-  Plug.Router
-]);
+}).use(Plug.Conn);
 
 Plug('Home')({
   constructor() {

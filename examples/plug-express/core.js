@@ -3,18 +3,21 @@ var Plug = module.exports = require('../../lib')();
 var express = require('express');
 var routeMappings = require('route-mappings');
 
-Plug(Plug('Logger'), 'Conn')({
+Plug([
+  Plug('Logger'),
+  Plug('Router')
+], 'Conn')({
   constructor() {
-    this.log('#init');
+    this.log('init');
 
     this.port = 3000;
     this.app = express();
 
-    if (this.routes) {
-      this.routes.forEach((route) => {
-        console.log(route);
-      });
-    }
+    this.router = this.router(routeMappings);
+    this.routes = this.router.routes;
+    this.routes.forEach((route) => {
+      this.log(route.verb.toUpperCase() + ' ' + route.path + ' '+ route.as);
+    });
   },
   prototype: {
     start() {
@@ -28,7 +31,7 @@ Plug(Plug('Logger'), 'Conn')({
 
 Plug('Router')({
   constructor() {
-    this.log('#router');
+    this.log('router');
 
     var controllers = {};
 
@@ -44,8 +47,7 @@ Plug('Router')({
       };
     }
 
-    this.router = this.router(routeMappings);
-    this.router.routes.forEach((route) => {
+    this.routes.forEach((route) => {
       var _handler = route.handler.concat(route.to || []).join('.').split('.');
 
       var controller = _handler.slice(0, _handler.length - 1).join('.');
