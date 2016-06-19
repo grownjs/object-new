@@ -40,7 +40,16 @@ describe 'def()', ->
       it 'should provide the registered definition name', ->
         def('MyClass', @)
         expect(@MyClass.name).toEqual 'MyClass'
-        expect(@MyClass.new().constructor).toBeUndefined()
+        expect(@MyClass.new().constructor.name).toEqual 'MyClass'
+
+        def('ParentClass', @)({
+          constructor: ->
+            @className = @constructor.name
+        })
+        def('ChildClass', @).use(@ParentClass)
+
+        expect(@ParentClass.new().className).toEqual 'ParentClass'
+        expect(@ChildClass.new().className).toEqual 'ChildClass'
 
   describe 'methods', ->
     describe 'new()', ->
