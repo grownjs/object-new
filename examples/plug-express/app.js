@@ -1,27 +1,28 @@
 var Plug = require('./core');
 
-// custom logger, uncomment and see ;)
-Plug('Logger')({
-  prototype: {
-    log() {
-      console.log.apply(console.log, ['info:'].concat(Array.prototype.slice.call(arguments)));
-    }
+Plug('My.CustomRouter')({
+  constructor() {
+    this.router.get('/:x', 'Home.yay');
   }
 });
 
-Plug('MyConn')({
+Plug('My.App')({
   constructor() {
     this.log('my');
   },
   prototype: {
     router(routeMappings) {
       return routeMappings()
-        .get('/', 'Home.index');
+        .get('/', 'App.Home.index');
     }
   }
-}).use(Plug.Conn);
+}).use([
+  Plug.App,
+  Plug.App.Router,
+  Plug.My.CustomRouter
+]);
 
-Plug('Home')({
+Plug('App.Home')({
   constructor() {
     this.log('HOME');
   },
@@ -30,12 +31,12 @@ Plug('Home')({
       res.end('OK');
     }
   }
-}).use(Plug.Controller);
+}).use(Plug.App.Controller);
 
 Plug('Main')({
   constructor() {
     this.log('OSOM');
   }
-}).use(Plug.MyConn);
+}).use(Plug.My.App);
 
 Plug.Main.new().start();
