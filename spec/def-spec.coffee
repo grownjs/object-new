@@ -135,7 +135,7 @@ describe 'def()', ->
     it 'should be able to create objects from factories or through the new operator', ->
       def('BaseClass', @)({ prototype: { foo: 'bar' } })
       def(@BaseClass, 'ChildClass', @)({ prototype: { baz: 'buzz' } })
-      @ChildClass.use({ candy: 'does nothing' })
+      @ChildClass.use({ prototype: { candy: 'does nothing' } })
 
       a = @ChildClass.new()
       b = new @ChildClass()
