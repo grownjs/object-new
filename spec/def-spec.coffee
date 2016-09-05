@@ -4,6 +4,28 @@ describe 'def()', ->
   it 'should be a function', ->
     expect(typeof def).toEqual 'function'
 
+  describe 'self', ->
+    it 'should return a new scope without arguments', ->
+      a = def()
+      b = def()
+
+      expect(a).not.toBe b
+      expect(-> a('x')).not.toThrow()
+      expect(-> b('y')).not.toThrow()
+      expect(a.x).not.toBeUndefined()
+      expect(b.x).toBeUndefined()
+      expect(a.y).toBeUndefined()
+      expect(b.y).not.toBeUndefined()
+
+  describe 'errors', ->
+    it 'should fail on invalid definitions', ->
+      expect(-> def('no_redefine', @)({
+        new: ->
+          42
+      })).toThrow()
+
+      expect(-> def('no_objects').use(-1).new()).toThrow()
+
   describe 'modules', ->
     it 'can define local modules', ->
       def 'local_module', @
