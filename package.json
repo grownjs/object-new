@@ -1,6 +1,6 @@
 {
   "name": "def-module",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "Module madness!",
   "main": "lib/index.js",
   "scripts": {
