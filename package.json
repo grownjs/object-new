@@ -1,7 +1,7 @@
 {
   "name": "def-module",
   "version": "0.0.1",
-  "description": "Plugabble modules got crazy!",
+  "description": "Module madness!",
   "main": "lib/index.js",
   "scripts": {
     "dev": "jasmine-node spec --coffee --verbose --autoTest --watchFolders lib",
