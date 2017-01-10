@@ -48,3 +48,17 @@ describe 'Object.new()', ->
     # all methods has the context as first argument
     expect($new('short', { methods: { x: -> 'y' } }).new().x()).toEqual 'y'
     expect($new('args', { methods: { x: (_, y) -> y } }).new().x('z')).toEqual 'z'
+
+  it 'can define init', ->
+    # all methods are called with the scope as first argument (no this)
+    o = $new('mutatedObject', {
+      init: (self, value) ->
+        self._value = value or 'OK'
+
+      methods:
+        value: (self, suffix = '!') ->
+          self._value + suffix
+    })
+
+    expect(o.new().value('!!!')).toEqual 'OK!!!'
+    expect(o.new('OSOM').value()).toEqual 'OSOM!'
