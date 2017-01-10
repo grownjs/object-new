@@ -10,17 +10,17 @@ describe 'Object.new()', ->
   it 'should fail if no name is given', ->
     expect(-> $new('')).toThrow()
 
-  it 'returns an object when is called', ->
-    expect(typeof $new('example')).toEqual 'object'
+  it 'returns an function when is called', ->
+    expect(typeof $new('example')).toEqual 'function'
 
   it 'will nest multiple objects using keypaths', ->
     m = $new('m')
     n = $new('m.n')
     o = $new('m.n.o')
 
-    expect(m.n.o.name).toEqual 'o'
-    expect(m.n.name).toEqual 'n'
     expect(m.name).toEqual 'm'
+    expect(m.n.name).toEqual 'n'
+    expect(m.n.o.name).toEqual 'o'
 
   it 'can create objects with identity', ->
     expect($new('myObject').name).toEqual 'myObject'
@@ -62,3 +62,12 @@ describe 'Object.new()', ->
 
     expect(o.new().value('!!!')).toEqual 'OK!!!'
     expect(o.new('OSOM').value()).toEqual 'OSOM!'
+
+  it 'can be instantiated with new', ->
+    O = $new('ClassExample', { properties: { x: 'y' } })
+
+    expect(typeof O).toEqual 'function'
+    expect((new O).x).toEqual 'y'
+
+    # old-style support
+    expect(O().x).toEqual 'y'
