@@ -70,3 +70,7 @@ describe 'Object.new()', ->
 
     # old-style support
     expect(O().x).toEqual 'y'
+
+  it 'inject this as expected', ->
+    o = $new('ClassA', { properties: { x: 'y' }, methods: { z: -> @x } })
+    expect(o.new().z()).toEqual 'y'
