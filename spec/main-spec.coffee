@@ -53,42 +53,40 @@ describe 'Object.new()', ->
     expect($new('dynamicProps', { properties: { x: -> 'y' } }).new().x).toEqual 'y'
     expect($new('dynamicProps_', { properties: { x: (_) -> 'y' } }).new().x).toEqual 'y'
 
-  it 'can define dynamic properties', ->
+  it 'can define read-only properties', ->
     O = $new('dynamic', {
       properties:
-        keys: [1, {}]
-        value: 'OSOM'
+        value: 'WILL CHANGE'
         readonly: -> @value
-        previousState: (newValue, oldValue) ->
-          throw new Error('FALSE') if oldValue is 42
-          @value = newValue if newValue?
-          @value
     })
 
     o = O.new()
-    o.value = 'YES'
-    o.keys.push 2
-    o.keys[1].x = 'y'
+    o.value = 'CHANGED'
 
     # all values are kept safe
-    expect(o.value).toEqual 'YES'
-    expect(O.new().keys).toEqual [1, {}]
-    expect(O.new().value).toEqual 'OSOM'
+    expect(o.value).toEqual 'CHANGED'
+    expect(O.new().value).toEqual 'WILL CHANGE'
 
     # cannot override readonly-props
-    expect(o.readonly).toEqual 'YES'
+    expect(o.readonly).toEqual 'CHANGED'
     expect(-> o.readonly = 'NO').toThrow()
-    expect(o.readonly).toEqual 'YES'
+    expect(o.readonly).toEqual 'CHANGED'
 
-    # dynamic setter with previous state
-    expect(o.previousState).toEqual 'YES'
-    o.previousState = 'OSOM!'
-    expect(o.previousState).toEqual 'OSOM!'
+  it 'can define propertis with getters/setters', ->
+    o = $new(eval('''({
+        properties: {
+          get someValue() { return this._value; },
+          set someValue(value) { this._value = value; }
+        }
+      })'''))
 
-    # once the truth is said it cannot be refuted
-    o.previousState = 42
-    expect(-> o.previousState = null).toThrow()
-    expect(o.previousState).toEqual 42
+    o.someValue = 'OK'
+
+    # you shall not pass!
+    delete o.someValue
+
+    expect(o._value).toEqual 'OK'
+    expect(o.someValue).toEqual 'OK'
 
   it 'can define methods', ->
     # fails is given methods is not a function
