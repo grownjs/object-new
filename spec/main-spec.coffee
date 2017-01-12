@@ -74,3 +74,19 @@ describe 'Object.new()', ->
   it 'inject this as expected', ->
     o = $new('ClassA', { properties: { x: 'y' }, methods: { z: -> @x } })
     expect(o.new().z()).toEqual 'y'
+
+  it 'handles enumerability by default', ->
+    o = $new('Test', {
+      # hidden
+      init: ->
+      methods:
+        _hiddenMethod: ->
+        enumerableMethod: ->
+      properties:
+        _hiddenProperty: true
+        enumerableProperty: true
+    })
+
+    expect(Object.keys(o)).toEqual ['name', 'new', 'init', 'methods', 'properties']
+    expect(Object.keys(o.new())).toEqual ['enumerableMethod', 'enumerableProperty']
+    expect(JSON.stringify(o.new())).toEqual '{"enumerableProperty":true}'
