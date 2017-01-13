@@ -29,11 +29,7 @@ describe 'Object.new()', ->
     expect($new('staticProps', { a: 'b' }).a).toEqual 'b'
 
   it 'can define static methods', ->
-    # functions without arguments are called as getters
-    expect($new('staticMethods', { a: -> 'b' }).a).toEqual 'b'
-
-    # functions with arguments are called as regular methods
-    expect($new('staticMethods_', { x: (y) -> y }).x('z')).toEqual 'z'
+    expect($new('staticMethods', { a: -> 'b' }).a()).toEqual 'b'
 
   it 'should validate its methods', ->
     expect(-> $new({
@@ -49,13 +45,13 @@ describe 'Object.new()', ->
 
   it 'can define properties', ->
     # properties are always called as getters regardless of its arguments
-    expect($new('props', { properties: { x: 'y' } }).new().x).toEqual 'y'
-    expect($new('dynamicProps', { properties: { x: -> 'y' } }).new().x).toEqual 'y'
-    expect($new('dynamicProps_', { properties: { x: (_) -> 'y' } }).new().x).toEqual 'y'
+    expect($new('props', { props: { x: 'y' } }).new().x).toEqual 'y'
+    expect($new('dynamicProps', { props: { x: -> 'y' } }).new().x).toEqual 'y'
+    expect($new('dynamicProps_', { props: { x: (_) -> 'y' } }).new().x).toEqual 'y'
 
   it 'can define read-only properties', ->
     O = $new('dynamic', {
-      properties:
+      props:
         value: 'WILL CHANGE'
         readonly: -> @value
     })
@@ -74,18 +70,19 @@ describe 'Object.new()', ->
 
   it 'can define propertis with getters/setters', ->
     o = $new(eval('''({
-        properties: {
+        props: {
           get someValue() { return this._value; },
           set someValue(value) { this._value = value; }
         }
       })'''))
+
+    expect(o.someValue).toBeUndefined()
 
     o.someValue = 'OK'
 
     # you shall not pass!
     delete o.someValue
 
-    expect(o._value).toEqual 'OK'
     expect(o.someValue).toEqual 'OK'
 
   it 'can define methods', ->
@@ -110,7 +107,7 @@ describe 'Object.new()', ->
     expect(o.new('OSOM').value()).toEqual 'OSOM!'
 
   it 'can be instantiated with new', ->
-    O = $new('ClassExample', { properties: { x: 'y' } })
+    O = $new('ClassExample', { props: { x: 'y' } })
 
     expect(typeof O).toEqual 'function'
     expect((new O).x).toEqual 'y'
@@ -119,21 +116,53 @@ describe 'Object.new()', ->
     expect(O().x).toEqual 'y'
 
   it 'inject this as expected', ->
-    o = $new('ClassA', { properties: { x: 'y' }, methods: { z: -> @x } })
+    o = $new('ClassA', { props: { x: 'y' }, methods: { z: -> @x } })
     expect(o.new().z()).toEqual 'y'
 
   it 'handles enumerability by default', ->
     o = $new('Test', {
       # hidden
       init: ->
+      props:
+        _hiddenProperty: true
+        enumerableProperty: true
       methods:
         _hiddenMethod: ->
         enumerableMethod: ->
-      properties:
-        _hiddenProperty: true
-        enumerableProperty: true
     })
 
-    expect(Object.keys(o)).toEqual ['name', 'new', 'init', 'methods', 'properties']
-    expect(Object.keys(o.new())).toEqual ['enumerableMethod', 'enumerableProperty']
+    expect(Object.keys(o)).toEqual ['name', 'new', 'init', 'props', 'methods', 'extensions']
+    expect(Object.keys(o.new())).toEqual ['enumerableProperty', 'enumerableMethod']
     expect(JSON.stringify(o.new())).toEqual '{"enumerableProperty":true}'
+
+  it 'will merge multiple definitions', ->
+    results = []
+
+    $new('Base', {
+      init: ->
+        results.push 'DEFAULT'
+
+      props:
+        value: 'OK'
+
+      methods:
+        test: -> 'OVERRIDE ME'
+    })
+
+    $new('Base', {
+      init: ->
+        results.push 'MIXIN'
+
+      props:
+        foo: -> 'bar'
+
+      methods:
+        test: -> 'OK'
+    })
+
+    o = $new('Base').new()
+
+    expect(o.foo).toEqual 'bar'
+    expect(o.test()).toEqual 'OK'
+    expect(results).toEqual ['DEFAULT', 'MIXIN']
+    expect(Object.keys(o)).toEqual ['value', 'foo', 'test']
