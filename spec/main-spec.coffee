@@ -166,3 +166,18 @@ describe 'Object.new()', ->
     expect(o.test()).toEqual 'OK'
     expect(results).toEqual ['DEFAULT', 'MIXIN']
     expect(Object.keys(o)).toEqual ['value', 'foo', 'test']
+
+  it 'has support for namespaces', ->
+    Global = $new('TEST', { init: -> @_global = 1 })
+    Local = $new()
+    Other = $new()
+
+    TEST = Local('TEST', { init: -> @_local = 1 })
+
+    a = Other('TEST').new()
+    b = $new('TEST').new()
+    c = Local('TEST').new()
+
+    expect(JSON.stringify(a)).toEqual '{}'
+    expect(JSON.stringify(b)).toEqual '{"_global":1}'
+    expect(JSON.stringify(c)).toEqual '{"_local":1}'
