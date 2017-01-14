@@ -68,7 +68,7 @@ describe 'Object.new()', ->
     expect(-> o.readonly = 'NO').toThrow()
     expect(o.readonly).toEqual 'CHANGED'
 
-  it 'can define propertis with getters/setters', ->
+  it 'can define properties with getters/setters', ->
     o = $new(eval('''({
         props: {
           get someValue() { return this._value; },
@@ -112,8 +112,9 @@ describe 'Object.new()', ->
     expect(typeof O).toEqual 'function'
     expect((new O).x).toEqual 'y'
 
-    # old-style support
-    expect(O().x).toEqual 'y'
+    # calling the object as function will nest definitions
+    o = O('NestedObject', { props: { foo: 'bar' } })
+    expect(O.NestedObject.new().foo).toEqual 'bar'
 
   it 'inject this as expected', ->
     o = $new('ClassA', { props: { x: 'y' }, methods: { z: -> @x } })
@@ -166,6 +167,30 @@ describe 'Object.new()', ->
     expect(o.test()).toEqual 'OK'
     expect(results).toEqual ['DEFAULT', 'MIXIN']
     expect(Object.keys(o)).toEqual ['value', 'foo', 'test']
+
+  it 'can compose multiple inheritance', ->
+    # static props
+    A = $new('A', { v: 1 } )
+    B = A({ v: 2 })
+
+    expect(A.v).toEqual 1
+    expect(B.v).toEqual 2
+
+    # mixed props/methods
+    A2 = A({ methods: get: -> @x })
+    A3 = A2({ props: { x: 'y' } })
+
+    expect(A3.new().get()).toEqual 'y'
+
+    # constructors run in order
+    C = $new('C', { init: -> @r.push(1) })
+    C1 = C({ props: { r: [] } })
+
+    # don't pollute
+    C1.new()
+    C2 = C1({ init: -> @r.push(2) })
+
+    expect(C2.new().r).toEqual [1, 2]
 
   it 'has support for namespaces', ->
     Global = $new('TEST', { init: -> @_global = 1 })
