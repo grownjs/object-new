@@ -208,4 +208,4 @@ describe 'Object.new()', ->
     expect(JSON.stringify(c)).toEqual '{"_local":1}'
 
   it 'can provide values', ->
-    expect($new('getInjector', () => 'OSOM').new()).toEqual 'OSOM'
+    expect($new('getInjector', () -> 'OSOM').new()).toEqual 'OSOM'
