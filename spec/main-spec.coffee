@@ -206,3 +206,6 @@ describe 'Object.new()', ->
     expect(JSON.stringify(a)).toEqual '{}'
     expect(JSON.stringify(b)).toEqual '{"_global":1}'
     expect(JSON.stringify(c)).toEqual '{"_local":1}'
+
+  it 'can provide values', ->
+    expect($new('getInjector', () => 'OSOM').new()).toEqual 'OSOM'
