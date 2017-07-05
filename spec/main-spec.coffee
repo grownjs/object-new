@@ -209,3 +209,9 @@ describe 'Object.new()', ->
 
   it 'can provide values', ->
     expect($new('getInjector', () -> 'OSOM').new()).toEqual 'OSOM'
+
+  it 'can avoid extensions', ->
+    $new('foo', { bar: 'baz' })
+    $new('foo', { candy: 'does nothing' }, null, false)
+
+    expect($new('foo').extensions.length).toEqual 1
