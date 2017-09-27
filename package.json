@@ -1,6 +1,6 @@
 {
   "name": "object-new",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "Object.new() infection!",
   "main": "lib/index.js",
   "scripts": {
