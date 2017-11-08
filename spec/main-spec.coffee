@@ -132,7 +132,7 @@ describe 'Object.new()', ->
         enumerableMethod: ->
     })
 
-    expect(Object.keys(o)).toEqual ['name', 'new', 'init', 'props', 'methods', 'extensions']
+    expect(Object.keys(o)).toEqual []
     expect(Object.keys(o.new())).toEqual ['enumerableProperty', 'enumerableMethod']
     expect(JSON.stringify(o.new())).toEqual '{"enumerableProperty":true}'
 
