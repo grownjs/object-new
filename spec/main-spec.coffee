@@ -211,7 +211,16 @@ describe 'Object.new()', ->
     expect($new('getInjector', () -> 'OSOM').new()).toEqual 'OSOM'
 
   it 'can avoid extensions', ->
+    test = null
+
     $new('foo', { bar: 'baz' })
     $new('foo', { candy: 'does nothing' }, null, false)
+    $new('foo', `{ get test() { test = 42 } }`, null, false)
 
+    expect(test).toBe null
     expect($new('foo').extensions.length).toEqual 1
+
+  it 'can receive args on factories', ->
+    bar = $new('bar', (_, x) -> {x})
+
+    expect(bar.new(null, 42)).toEqual { x: 42 }
