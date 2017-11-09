@@ -224,3 +224,21 @@ describe 'Object.new()', ->
     bar = $new('bar', (_, x) -> {x})
 
     expect(bar.new(null, 42)).toEqual { x: 42 }
+
+  it "can invoke parents' methods or props", ->
+    test = null
+
+    A = $new 'A',
+      methods:
+        foo: -> test = 'A:foo'
+
+    B = A
+      methods:
+        bar: ->
+          @parent.foo()
+
+    x = new B()
+    y = x.bar()
+
+    expect(test).not.toBe null
+    expect(test).toBe y
