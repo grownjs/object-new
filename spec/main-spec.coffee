@@ -235,7 +235,7 @@ describe 'Object.new()', ->
     B = A
       methods:
         bar: ->
-          @parent.foo()
+          @super.foo()
 
     x = new B()
     y = x.bar()
