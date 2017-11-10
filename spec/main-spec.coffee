@@ -226,19 +226,31 @@ describe 'Object.new()', ->
     expect(bar.new(null, 42)).toEqual { x: 42 }
 
   it "can invoke parents' methods or props", ->
-    test = null
+    test = []
 
-    A = $new 'A',
+    Parent = $new 'Parent',
       methods:
-        foo: -> test = 'A:foo'
+        foo: ->
+          console.log 'foo', @super
+          console.log 'foo', @
+          test.push 'OK'
 
-    B = A
+    Child = Parent
       methods:
         bar: ->
+          console.log 'bar', @super
+          console.log 'bar', @
           @super.foo()
 
-    x = new B()
-    y = x.bar()
+    Toy = Child
+      methods:
+        baz: ->
+          console.log 'baz', @super
+          console.log 'baz', @
+          @super.bar()
 
-    expect(test).not.toBe null
-    expect(test).toBe y
+    y = new Toy()
+
+    expect([y.foo(), test]).toEqual [1, ['OK']]
+    expect([y.bar(), test]).toEqual [2, ['OK', 'OK']]
+    expect([y.baz(), test]).toEqual [3, ['OK', 'OK', 'OK']]
