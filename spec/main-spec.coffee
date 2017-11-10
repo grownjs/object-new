@@ -231,26 +231,29 @@ describe 'Object.new()', ->
     Parent = $new 'Parent',
       methods:
         foo: ->
-          console.log 'foo', @super
-          console.log 'foo', @
           test.push 'OK'
 
     Child = Parent
       methods:
         bar: ->
-          console.log 'bar', @super
-          console.log 'bar', @
           @super.foo()
 
     Toy = Child
       methods:
         baz: ->
-          console.log 'baz', @super
-          console.log 'baz', @
           @super.bar()
 
     y = new Toy()
 
-    expect([y.foo(), test]).toEqual [1, ['OK']]
-    expect([y.bar(), test]).toEqual [2, ['OK', 'OK']]
-    expect([y.baz(), test]).toEqual [3, ['OK', 'OK', 'OK']]
+    expect(-> y.baz()).not.toThrow()
+    expect(y.baz()).toEqual 2
+
+    expect(test).toEqual ['OK', 'OK']
+
+    expect(-> y.super).not.toThrow()
+    expect(-> y.super.super).not.toThrow()
+    expect(-> y.super.super.super).toThrow()
+
+    expect(Object.keys(y)).toEqual ['foo', 'bar', 'baz']
+    expect(Object.keys(y.super)).toEqual ['foo', 'bar']
+    expect(Object.keys(y.super.super)).toEqual ['foo']
