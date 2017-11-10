@@ -225,6 +225,26 @@ describe 'Object.new()', ->
 
     expect(bar.new(null, 42)).toEqual { x: 42 }
 
+  it 'can copy complex values, e.g. RegExp/Date', ->
+    time = new Date()
+
+    Top = $new 'Top',
+      opts:
+        str: 'OK'
+        regex: /x/
+        timestamp: time
+
+    Sub = Top
+      opts:
+        str: 'OSOM'
+
+    Top.opts.timestamp.setTime(0)
+    expect(Top.opts.timestamp.getTime()).toEqual 0
+
+    expect(Sub.opts.str).toEqual 'OSOM'
+    expect(Sub.opts.regex).toEqual /x/
+    expect(Sub.opts.timestamp.getTime()).toEqual time.getTime()
+
   it "can invoke parents' methods or props", ->
     test = []
 
