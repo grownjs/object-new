@@ -1,3 +1,5 @@
+#require('debug').enable('*');
+
 $new = require('..')
 
 describe 'Object.new()', ->
@@ -277,3 +279,5 @@ describe 'Object.new()', ->
     expect(Object.keys(y)).toEqual ['foo', 'bar', 'baz']
     expect(Object.keys(y.super)).toEqual ['foo', 'bar']
     expect(Object.keys(y.super.super)).toEqual ['foo']
+
+  # FIXME: check init() inheritance calls...
