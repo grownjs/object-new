@@ -5,7 +5,7 @@
 Experimental DSL for module definitions.
 
 ```bash
-$ yarn add object-new
+$ npm install object-new --save
 ```
 
 ## Containers
@@ -31,19 +31,17 @@ const $ = $new();
 Any container, once declared, can be extended through definitions.
 
 ```js
-$('Base', {
-  init(scope, opts) {
-    scope.start();
+$('Polygon', {
+  init(width, height) {
+    this.width = width;
+    this.height = height;
   },
-  methods: {
-    start(scope) {
-      console.log('beep', scope.value);
-    }
-  },
-  properties: {
-    get value() {
-      return 42;
-    },
+});
+
+const Square = $.Polygon({
+  name: 'Square',
+  init(size) {
+    this.super.init(size, size);
   },
 });
 ```
@@ -51,9 +49,62 @@ $('Base', {
 The declared functionality is later composed when creating new objects.
 
 ```js
-const base = $('Base').new();
+const poly = Polygon.new(3, 4);
+const square = Square.new(2);
 
-// beep 42
+console.log(poly);
+// { width: 3, height: 4 }
+
+console.log(square);
+// { width: 2, height: 2 }
 ```
 
-This `new()` method is very powerful, e.g. `$.Base.new(...args, extra)`
+## Initialization
+
+The `init()` method is our constructor method, it can return more definitions or completely a new different value.
+
+```js
+$('Example', {
+  init() {
+    // scalar values can be returned, e.g.
+    // return 42;
+
+    return {
+      props: {},
+      methods: {},
+      // init, mixins, etc.
+    };
+  },
+});
+```
+
+Each time you create a new instance from any definition `object-new` will do:
+
+1. Create an empty instance with `Object.create(null)`
+2. If `extensions > 1` build the `super` proxy
+3. Merge initial definitions for the instance
+4. Reduce initializers and mixins
+
+Only the `init()` method from the main instance will be called upon creation, inside you can invoke `super.init()` for calling code from parent definitions, etc.
+
+During the initialization any `init()` or `mixins()` method from any returned value will be executed again until consume all of them.
+
+Once finished, a last patch is applied to the newly created instance.
+
+## Props
+
+Properties must be defined within a `props` object.
+
+## Mixins
+
+Additional definitions must be referentied within a `mixins` array or function.
+
+## Methods
+
+Instance methods must be defined within a `methods` object.
+
+Functions attached to the main definition are meant to be static methods.
+
+## Extensions
+
+Each module declaration has a `extensions` property with all the given references.
