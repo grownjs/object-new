@@ -310,3 +310,32 @@ describe 'Object.new()', ->
 
     expect(Square.name).toEqual 'SquareX'
     expect(Polygon.name).toEqual 'FunkPolygon'
+
+  it 'support mixins when creating instances', ->
+    test = null
+
+    MyMixin = $new 'Mixin',
+      mixins: ->
+        props:
+          x: 'y'
+
+    OtherMixin = $new 'Other',
+      mixins: ->
+        init: ->
+          test = 42
+          null
+
+    Mix = $new 'Mixed',
+      mixins: ->
+        [
+          MyMixin
+          OtherMixin
+          { props: { a: 'b' } }
+        ]
+
+    mix = new Mix()
+
+    expect(test).toBe 42
+
+    expect(mix.a).toEqual 'b'
+    expect(mix.x).toEqual 'y'
