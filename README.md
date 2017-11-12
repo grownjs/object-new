@@ -69,10 +69,15 @@ $('Example', {
     // scalar values can be returned, e.g.
     // return 42;
 
+    // extra definitions can be returned as plain objects
+    // or as arrays, e.g.
+    // return [{ props: { ... } }];
+
     return {
+      init() {}
       props: {},
+      mixins: [],
       methods: {},
-      // init, mixins, etc.
     };
   },
 });
@@ -85,26 +90,148 @@ Each time you create a new instance from any definition `object-new` will do:
 3. Merge initial definitions for the instance
 4. Reduce initializers and mixins
 
-Only the `init()` method from the main instance will be called upon creation, inside you can invoke `super.init()` for calling code from parent definitions, etc.
+Only the `init()` method from the main instance will be called upon creation.
 
-During the initialization any `init()` or `mixins()` method from any returned value will be executed again until consume all of them.
+During the initialization, recursive calls to `init()` are allowed, also any mixins found will be executed and/or merged into additional extensions.
 
-Once finished, a last patch is applied to the newly created instance.
+Once finished, all this definitions are merged together into the instance.
 
 ## Props
 
 Properties must be defined within a `props` object.
 
+```js
+;
+```
+
 ## Mixins
 
 Additional definitions must be referentied within a `mixins` array or function.
+
+```js
+;
+```
 
 ## Methods
 
 Instance methods must be defined within a `methods` object.
 
+```js
+;
+```
+
 Functions attached to the main definition are meant to be static methods.
+
+```js
+;
+```
 
 ## Extensions
 
 Each module declaration has a `extensions` property with all the given references.
+
+```js
+$('Dummy', {
+  props: {
+    value: 42,
+  },
+});
+
+console.log($('Dummy').extensions);
+// [{ props: { value: 42 } }]
+```
+
+Giving `extensions` within regular module definitions is disallowed.
+
+```js
+$('Dummy', {
+  extensions: [],
+});
+
+// Error: Dummy does not expect extensions
+```
+
+Instances, however, can receive `extensions` directly.
+
+```js
+const x = $({
+  extensions: [{
+    props: {
+      value: 42,
+    },
+  }],
+});
+
+console.log(x.value);
+// 42
+```
+
+## Inheritance
+
+Modules created with `object-new` does not use the prototype-chain, instead they rely on the `extensions` abstraction to _inherit_ existing functionality by copying it.
+
+```js
+$('Base', {
+  props: {
+    value: 42,
+    thisValue() {
+      return this.value;
+    },
+  },
+});
+
+// note this allow to "extend" any existing definition
+$('Base', {
+  props: {
+    value: 99,
+    parentValue() {
+      return this.super.value;
+    },
+  },
+});
+
+const b1 = $('Base').new();
+
+console.log(b1.value);
+console.log(b1.thisValue);
+// 99
+// 99
+
+// modify from the attached extensions (first one)
+$('Base').extensions[0].props.value = -1;
+
+console.log(b1.value);
+console.log(b1.thisValue);
+// 99
+// 99
+
+// new instances are still using the same extensions
+console.log($('Base').new().value);
+console.log($('Base').new().thisValue);
+// 99
+// 99
+
+console.log($('Base').new().value);
+console.log($('Base').new().thisValue);
+console.log($('Base').new().parentValue);
+// 99
+// 99
+// -1
+```
+
+Due this limitation, if you change a value from any parent definition it will not affect any existing instance, also any descendant definition remain unaffected.
+
+```js
+function Base() {}
+Base.prototype.value = 42;
+
+const b = new Base();
+
+console.log(b.value);
+// 42
+
+Base.prototype.value = -1;
+
+console.log(b.value);
+// -1
+```
