@@ -215,8 +215,6 @@ console.log(d.otherValue);
 
 Perhaps the `mixins()` method works exactly like `init()` but there's a key difference: mixins can be referenced and executed from host instances.
 
-This way you avoid to call directly `init()` on each added extension from your module.
-
 ## Methods
 
 Instance methods must be defined within a `methods` object.
