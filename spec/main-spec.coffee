@@ -389,6 +389,7 @@ describe 'Object#definitions -> $', ->
       expect(s.a).toEqual { j: 'k', b: { c: 'd' } }
 
       SubA = A({
+        name: 'thisWillFail'
         mixins: Sub
       })
 
@@ -485,6 +486,9 @@ describe 'Object#definitions -> $', ->
 
       expect(s.width).toEqual 2
       expect(s.height).toEqual 2
+
+      Square.name = 42
+      Polygon.name = 42
 
       expect(Square.name).toEqual 'SquareX'
       expect(Polygon.name).toEqual 'FunkPolygon'
