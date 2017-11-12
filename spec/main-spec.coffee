@@ -16,6 +16,15 @@ describe 'Object#definitions -> $', ->
   it 'should fail if no name is given', ->
     expect(-> $('')).toThrow()
 
+  it 'should fail on invalid definitions', ->
+    # passing undefined is the same as oassing just one argument
+    expect(-> $('x', undefined)).not.toThrow()
+
+    expect(-> $('x', null)).toThrow()
+    expect(-> $('x', NaN)).toThrow()
+    expect(-> $('x', 'y')).toThrow()
+    expect(-> $('x', [])).toThrow()
+
   it 'should shortcut some arguments', ->
     expect($new('x', { y: 42}, false).y).toEqual 42
 
@@ -95,6 +104,7 @@ describe 'Object#definitions -> $', ->
       # factories extensions disabled are returned in-place
       expect($('a', (() -> 'OSOM'), false)()).toEqual 'OSOM'
       expect($('x.y', (() -> 'OSOM'), false)()).toEqual 'OSOM'
+      expect(-> $('x.y', (() -> 'OSOM'), false)()).toThrow()
 
       # but they are treated as getters
       expect($.a).toEqual 'OSOM'
