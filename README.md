@@ -101,29 +101,154 @@ Once finished, all this definitions are merged together into the instance.
 Properties must be defined within a `props` object.
 
 ```js
-;
+$('Dummy', {
+  props: {
+    // hidden but accesible
+    _hidden: 42,
+
+    // any regular value are kept as-is
+    title: 'Untitled',
+
+    // note functions within props are meant to be getters
+    getter() {
+      return this.value;
+    },
+
+    // dynamic properties
+    get value() {
+      return this._hidden;
+    },
+
+    // rare, but you can declare write-only props
+    set awesome(value) {
+      this._hidden = value;
+    },
+  },
+});
+
+const d = $('Dummy').new();
+
+d.awesome = NaN;
+
+console.log(d.title);
+// Untitled
+
+console.log(d.getter);
+// NaN
 ```
 
 ## Mixins
 
-Additional definitions must be referentied within a `mixins` array or function.
+Additional definitions must be referentied within a `mixins` object.
 
 ```js
-;
+$('Dummy', {
+  props: {
+    value: 42,
+  },
+});
+
+$('Mixin', {
+  mixins: {
+    props: {
+      value: 42,
+      otherValue: -1,
+    },
+  },
+});
+
+$('TestDummy', {
+  mixins: $('Dummy'),
+});
+
+$('TestMixin', {
+  mixins: [
+    $('Mixin'),
+
+    // note this mixin will not override anything from Mixin
+    { props: { value: 1 } },
+
+    // to do so, you must place it within a factory, e.g.
+    () => ({ props: { otherValue: 99 } }),
+  ],
+});
+
+console.log($('Dummy').new().value);
+console.log($('TestDummy').new().value);
+// 42
+// undefined
+
+console.log($('Mixin').new().value);
+console.log($('TestMixin').new().value);
+console.log($('TestMixin').new().otherValue);
+// 42
+// 42
+// 99
 ```
+
+Mixins can return other mixins, or more definitions, they will be resolved and merged recursively.
+
+```js
+$('Dummy', {
+  mixins: [
+    { props: { value: 42, } },
+    [
+      () => ({ init() { this._value = -1; } }),
+      [
+        $('InPlace', {
+          mixins: () => ({ props: { otherValue: 99 } }),
+        }),
+      ],
+    ],
+  ],
+});
+
+const d = $('Dummy').new();
+
+console.log(d.value);
+console.log(d._value);
+console.log(d.otherValue);
+// 42
+// -1
+// 99
+```
+
+Perhaps the `mixins()` method works exactly to `init()` but there's a key difference: mixins can be referencied and executed from host instances.
+
+This way you avoid to call directly `init()` on each added extension from your module.
 
 ## Methods
 
 Instance methods must be defined within a `methods` object.
 
 ```js
-;
+$('Dummy', {
+  methods: {
+    sayHi() {
+      console.log('Hello world!');
+    },
+  },
+});
+
+$('Dummy').new().sayHi();
+// Hello world!
 ```
 
 Functions attached to the main definition are meant to be static methods.
 
 ```js
-;
+$('Dummy', {
+  // note you can use dynamic properties too
+  get message() {
+    return 'Hello world!';
+  },
+  sayHi() {
+    console.log(this.message);
+  },
+});
+
+$('Dummy').sayHi();
+// Hello world!
 ```
 
 ## Extensions
