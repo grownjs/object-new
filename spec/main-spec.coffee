@@ -326,12 +326,10 @@ describe 'Object.new()', ->
           null
 
     Mix = $new 'Mixed',
-      mixins: ->
-        [
-          MyMixin
-          OtherMixin
-          { props: { a: 'b' } }
-        ]
+      mixins: [
+        { props: { a: 'b' } }
+        [MyMixin, [OtherMixin]]
+      ]
 
     mix = new Mix()
 
