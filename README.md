@@ -172,8 +172,7 @@ $('Dummy', {
 });
 
 // this definition can be instantiated
-// and also can be used as mixin,
-// note it has a `mixins` prop
+// and also can be used as mixin
 $('Mixin', {
   mixins: {
     props: {
