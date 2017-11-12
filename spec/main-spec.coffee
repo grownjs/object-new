@@ -17,11 +17,11 @@ describe 'Object#definitions -> $', ->
     expect(-> $('')).toThrow()
 
   it 'should fail on invalid definitions', ->
-    # passing undefined is the same as oassing just one argument
-    expect(-> $('x', undefined)).not.toThrow()
+    # passing any-falsy is the same as oassing just one argument
+    expect($('x', undefined)).toBe $('x')
+    expect($('x', null)).toBe $('x')
+    expect($('x', NaN)).toBe $('x')
 
-    expect(-> $('x', null)).toThrow()
-    expect(-> $('x', NaN)).toThrow()
     expect(-> $('x', 'y')).toThrow()
     expect(-> $('x', [])).toThrow()
 
