@@ -16,11 +16,17 @@ describe 'Object#definitions -> $', ->
   it 'should fail if no name is given', ->
     expect(-> $('')).toThrow()
 
+  it 'should shortcut some arguments', ->
+    expect($new('x', { y: 42}, false).y).toEqual 42
+
   it 'should fail if extensions are given', ->
     expect(-> $('x', { extensions: [] })).toThrow()
 
   it 'returns an function when is called', ->
     expect(typeof $('example')).toEqual 'function'
+
+  it 'returns itself id no arguments are given', ->
+    expect($('self')).toBe $('self')()
 
   it 'will nest multiple objects using keypaths', ->
     m = $('m')
@@ -83,7 +89,16 @@ describe 'Object#definitions -> $', ->
       expect(O.NestedObject.new().foo).toEqual 'bar'
 
     it 'will return values from factories', ->
-      expect($('getInjector', () -> 'OSOM').new()).toEqual 'OSOM'
+      # regular factories are created by new-calls
+      expect($('_', () -> 'OSOM').new()).toEqual 'OSOM'
+
+      # factories extensions disabled are returned in-place
+      expect($('a', (() -> 'OSOM'), false)()).toEqual 'OSOM'
+      expect($('x.y', (() -> 'OSOM'), false)()).toEqual 'OSOM'
+
+      # but they are treated as getters
+      expect($.a).toEqual 'OSOM'
+      expect($.x.y).toEqual 'OSOM'
 
     it 'can receive args on factories', ->
       bar = $('bar', (_, x) -> {props:{x}})
