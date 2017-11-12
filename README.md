@@ -96,6 +96,26 @@ During the initialization, recursive calls to `init()` are allowed, also any mix
 
 Once finished, all this definitions are merged together into the instance.
 
+## Constructor
+
+All instances have a `this.ctor` prop for accesing its definition.
+
+```js
+const Dummy = $('Im.A.Nested.Dummy');
+
+console.log(Dummy.new().ctor === Dummy);
+// true
+```
+
+Definitions have a `name` and `class` too.
+
+```js
+console.log(Dummy.name);
+console.log(Dummy.class);
+// Dummy
+// Im.A.Nested.Dummy
+```
+
 ## Props
 
 Properties must be defined within a `props` object.
@@ -142,12 +162,18 @@ console.log(d.getter);
 Additional definitions must be referentied within a `mixins` object.
 
 ```js
+// regular definitions can be instantiated
+// but cannot be used as mixins, since
+// does not expose any `mixins` prop
 $('Dummy', {
   props: {
     value: 42,
   },
 });
 
+// this definition can be instantiated
+// and also can be used as mixin,
+// note it has a `mixins` prop
 $('Mixin', {
   mixins: {
     props: {
@@ -158,19 +184,11 @@ $('Mixin', {
 });
 
 $('TestDummy', {
+  // as Dummy has no mixins, it will not work as expected
   mixins: $('Dummy'),
-});
 
-$('TestMixin', {
-  mixins: [
-    $('Mixin'),
-
-    // note this mixin will not override anything from Mixin
-    { props: { value: 1 } },
-
-    // to do so, you must place it within a factory, e.g.
-    () => ({ props: { otherValue: 99 } }),
-  ],
+  // however, you can access and reuse its extensions, e.g.
+  // mixins: $('Dummy').extensions,
 });
 
 console.log($('Dummy').new().value);
@@ -178,12 +196,53 @@ console.log($('TestDummy').new().value);
 // 42
 // undefined
 
+$('TestMixin', {
+  props: {
+    imFeelingLucky: () => Math.random() > 0.5,
+  },
+  mixins: [
+    // modules works perfect here,
+    // they are detected and unrolled
+    $('Mixin'),
+
+    // while unrolling, functions have higher relevance than objects
+    // so this mixin will not override anything from Mixin above
+    // but it will still able to add new props or methods
+    { props: { value: 1, _hidden: true } },
+
+    // to override Mixin things just pass a function, e.g.
+    () => ({
+      props: {
+        otherValue: 99,
+        get isHidden() { return this._hidden; },
+      }
+    }),
+
+    // functions can receive the instance context as `this`,
+    // also all given arguments from constructor are received
+    function(someValue) {
+      // falsy values are just ignored from the initialization chain
+      return someValue && {
+        props: {
+          otherValue: this.imFeelingLucky ? -99 : someValue,
+        },
+      };
+    },
+  ],
+});
+
 console.log($('Mixin').new().value);
 console.log($('TestMixin').new().value);
+console.log($('TestMixin').new()._hidden);
+console.log($('TestMixin').new().isHidden);
 console.log($('TestMixin').new().otherValue);
+console.log($('TestMixin').new(-1).otherValue);
 // 42
 // 42
+// true
+// true
 // 99
+// -99 or -1 (randomly)
 ```
 
 Mixins can return other mixins, or more definitions, they will be resolved and merged recursively.
@@ -313,18 +372,18 @@ $('Base', {
   },
 });
 
-const b1 = $('Base').new();
+const b = $('Base').new();
 
-console.log(b1.value);
-console.log(b1.thisValue);
+console.log(b.value);
+console.log(b.thisValue);
 // 99
 // 99
 
 // modify from the attached extensions (first one)
 $('Base').extensions[0].props.value = -1;
 
-console.log(b1.value);
-console.log(b1.thisValue);
+console.log(b.value);
+console.log(b.thisValue);
 // 99
 // 99
 
