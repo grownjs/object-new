@@ -267,7 +267,7 @@ describe 'Object#definitions -> $', ->
     it 'can copy complex values, e.g. RegExp/Date', ->
       time = new Date()
 
-      Top = $new 'Top',
+      Top = $ 'Top',
         opts:
           str: 'OK'
           regex: /x/gmi
@@ -405,18 +405,18 @@ describe 'Object#definitions -> $', ->
     it 'support mixins when creating instances', ->
       test = null
 
-      MyMixin = $new 'Mixin',
+      MyMixin = $ 'Mixin',
         mixins: ->
           props:
             x: 'y'
 
-      OtherMixin = $new 'Other',
+      OtherMixin = $ 'Other',
         mixins: ->
           init: ->
             test = 42
             null
 
-      Mix = $new 'Mixed',
+      Mix = $ 'Mixed',
         mixins: [
           { props: { a: 'b' } }
           [MyMixin, [OtherMixin]]
@@ -433,7 +433,7 @@ describe 'Object#definitions -> $', ->
     it "can invoke parents' methods or props", ->
       test = []
 
-      Parent = $new 'Parent',
+      Parent = $ 'Parent',
         methods:
           foo: ->
             test.push 'OK'
@@ -463,8 +463,23 @@ describe 'Object#definitions -> $', ->
       expect(Object.keys(y.super)).toEqual ['foo', 'bar']
       expect(Object.keys(y.super.super)).toEqual ['foo']
 
+    it 'can do the same as above, but with static things', ->
+      $ 'Example',
+        test: (value) ->
+          value + 1
+
+      $ 'Example',
+        test: (value) ->
+          @super.test value + 2
+
+      $ 'Example',
+        test: (value) ->
+          @super.test value + 3
+
+      expect($('Example').test(1)).toEqual 7
+
     it 'can pass arguments to init() calls', ->
-      Polygon = $new 'Polygon',
+      Polygon = $ 'Polygon',
         name: 'FunkPolygon'
         init: (w, h) ->
           @width = w
