@@ -378,7 +378,7 @@ console.log(b.thisValue);
 // 99
 // 99
 
-// modify from the attached extensions (first one)
+// hack: modify from the attached extensions (first one)
 $('Base').extensions[0].props.value = -1;
 
 console.log(b.value);
@@ -415,4 +415,64 @@ Base.prototype.value = -1;
 
 console.log(b.value);
 // -1
+```
+
+However, subclassing is still posible, and any extension from root/child definitions will inherit their changes too.
+
+```js
+// any namespace definition return a child
+const Root = $('Root', {
+  props: {
+    value: 42,
+  },
+});
+
+// namespaced subcalls returns also a new child
+const Branch = Root('Branch', {
+  props: {
+    value: 99,
+  },
+});
+
+console.log(new Root().value);
+console.log(new Branch().value);
+// 42
+// 99
+
+// extend root definition
+$('Root', {
+  props: {
+    value: -1,
+  },
+});
+
+// extend child definition
+$('Root.Branch', {
+  props: {
+    value: -2,
+  },
+});
+
+// Root and Branch are just subclasses, calling them
+// will return more subclasses, etc.
+Root({
+  props: {
+    value: 123,
+  },
+});
+
+// this will not affect root/child definitions since
+// their definitions are always namespaced
+const Leaf = Branch({
+  props: {
+    value: 456,
+  },
+});
+
+console.log(new Root().value);
+console.log(new Leaf().value);
+console.log(new Branch().value);
+// -1
+// 456
+// -2
 ```
