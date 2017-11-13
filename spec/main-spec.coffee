@@ -464,19 +464,27 @@ describe 'Object#definitions -> $', ->
       expect(Object.keys(y.super.super)).toEqual ['foo']
 
     it 'can do the same as above, but with static things', ->
-      $ 'Example',
-        test: (value) ->
-          value + 1
+      tests = []
 
       $ 'Example',
-        test: (value) ->
-          @super.test value + 2
+        prop: 1
+        call: ->
+          tests.push @prop
+          null
 
       $ 'Example',
-        test: (value) ->
-          @super.test value + 3
+        prop: 2
+        call: ->
+          tests.push @super.call() or @prop
+          null
 
-      expect($('Example').test(1)).toEqual 7
+      $ 'Example',
+        prop: 3
+        call: ->
+          tests.push @super.call() or @prop
+          tests
+
+      expect($('Example').call()).toEqual [1, 2, 3]
 
     it 'can pass arguments to init() calls', ->
       Polygon = $ 'Polygon',
