@@ -402,6 +402,40 @@ describe 'Object#definitions -> $', ->
 
       expect(SubB.new().a).toEqual { j: 'k', b: { c: 'd' } }
 
+      # mixin-calls maintain context while receiving context and arguments
+      test = []
+
+      Example = $ 'Example',
+        foo: -> @bar
+        bar: 42
+        mixins: (ctx, value) ->
+          test.push @foo?() || @props?.value, value, ctx.value
+          init: (value1) ->
+            test.push @value, value + value1
+            init: (value2) ->
+              test.push @value, value + value1 + value2
+              null
+
+      ExampleA = $ 'ExampleA',
+        props:
+          value: 'FOO'
+        # mixins are self-references to ExampleA
+        mixins: Example
+
+      ExampleB = $ 'ExampleB',
+        props:
+          value: 'BAR'
+        # mixins are self-references to Example
+        mixins: [Example]
+
+      expect(ExampleA.new(-1).value).toEqual 'FOO'
+      expect(test).toEqual ['FOO', -1, 'FOO', 'FOO', -2, 'FOO', -3]
+
+      test = []
+
+      expect(ExampleB.new(-1).value).toEqual 'BAR'
+      expect(test).toEqual [42, -1, 'BAR', 'BAR', -2, 'BAR', -3]
+
     it 'support mixins when creating instances', ->
       test = null
 
