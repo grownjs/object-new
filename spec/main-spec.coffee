@@ -527,6 +527,38 @@ describe 'Object#definitions -> $', ->
       expect(mix.a).toEqual 'b'
       expect(mix.x).toEqual 'y'
 
+    it 'will merge multiple mixins at once with include', ->
+      Fixed = $ 'FixedModule',
+        mixins: -> [
+          { foo: 'bar'
+          props:
+            baz: 'buzz' }
+          -> include: [
+            { mixins:
+              a: 'b'
+              props:
+                candy: 'does' }
+            { mixins:
+              methods:
+                value: -> 42 }
+          ]
+        ]
+
+      Merged = $ 'MergedModule',
+        include: Fixed
+        bar: 'buzz'
+        props:
+          nothing: 'else matters'
+
+      expect(Merged.a).toEqual 'b'
+      expect(Merged.foo).toEqual 'bar'
+      expect(Merged.bar).toEqual 'buzz'
+
+      expect(new Merged().baz).toEqual 'buzz'
+      expect(new Merged().candy).toEqual 'does'
+      expect(new Merged().nothing).toEqual 'else matters'
+      expect(new Merged().value()).toEqual 42
+
   describe 'Object#inheritance', ->
     it 'attach self-references for root definitions',->
       props = {}
