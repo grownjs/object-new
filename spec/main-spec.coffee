@@ -403,18 +403,50 @@ describe 'Object#definitions -> $', ->
       expect(SubB.new().a).toEqual { j: 'k', b: { c: 'd' } }
 
       # mixin-calls maintain context while receiving context and arguments
-      test = []
+      results = []
 
       Example = $ 'Example',
         foo: -> @bar
         bar: 42
-        mixins: (ctx, value) ->
-          test.push @foo?() || @props?.value, value, ctx.value
-          init: (value1) ->
-            test.push @value, value + value1
-            init: (value2) ->
-              test.push @value, value + value1 + value2
+        mixins: [
+          # callbacks
+          (ctx, value) ->
+            results = []
+            results.push 'Example.fn'
+            results.push @foo?() || @props?.value || @value, ctx.value, value
+            null
+
+          # definitions will be skipped
+          {
+            mixins: ->
               null
+          }
+
+          # nested mixins
+          [
+            (ctx, value) ->
+              results.push 'Example.nested'
+              results.push @foo?() || @props?.value || @value, ctx.value, value
+
+              # mixins can return new definitions
+              init: ->
+                results.push 'Example.nested.init'
+                results.push @foo?() || @props?.value || @value, ctx.value, value
+                null
+
+            (ctx, value) ->
+              [
+                (ctx, value) ->
+                  results.push 'Example.nested.nested'
+                  results.push @foo?() || @props?.value || @value, ctx.value, value
+                  null
+
+                # nested definitions will be skipped
+                init: ->
+                  null
+              ]
+          ]
+        ]
 
       ExampleA = $ 'ExampleA',
         props:
@@ -429,12 +461,44 @@ describe 'Object#definitions -> $', ->
         mixins: [Example]
 
       expect(ExampleA.new(-1).value).toEqual 'FOO'
-      expect(test).toEqual ['FOO', -1, 'FOO', 'FOO', -2, 'FOO', -3]
-
-      test = []
+      expect(results).toEqual [
+        'Example.fn'
+        'FOO'
+        'FOO'
+        -1
+        'Example.nested'
+        'FOO'
+        'FOO'
+        -1
+        'Example.nested.init'
+        'FOO'
+        'FOO'
+        -1
+        'Example.nested.nested'
+        'FOO'
+        'FOO'
+        -1
+      ]
 
       expect(ExampleB.new(-1).value).toEqual 'BAR'
-      expect(test).toEqual [42, -1, 'BAR', 'BAR', -2, 'BAR', -3]
+      expect(results).toEqual [
+        'Example.fn'
+        42
+        'BAR'
+        -1
+        'Example.nested'
+        42
+        'BAR'
+        -1
+        'Example.nested.init'
+        'BAR'
+        'BAR'
+        -1
+        'Example.nested.nested'
+        42
+        'BAR'
+        -1
+      ]
 
     it 'support mixins when creating instances', ->
       test = null
