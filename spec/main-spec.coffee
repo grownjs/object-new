@@ -528,6 +528,13 @@ describe 'Object#definitions -> $', ->
       expect(mix.x).toEqual 'y'
 
   describe 'Object#inheritance', ->
+    it 'attach self-references for root definitions',->
+      props = {}
+
+      A = $ 'A', props
+
+      expect(props.self).toBe A
+
     it "can invoke parents' methods or props", ->
       test = []
 
