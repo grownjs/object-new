@@ -535,12 +535,12 @@ describe 'Object#definitions -> $', ->
             baz: 'buzz' }
           -> include: [
             { mixins:
-              a: 'b'
-              props:
-                candy: 'does' }
+                a: 'b'
+                props:
+                  candy: 'does' }
             { mixins:
-              methods:
-                value: -> 42 }
+                methods:
+                  value: -> 42 }
           ]
         ]
 
