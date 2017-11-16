@@ -3,7 +3,7 @@
 $new = require('..')
 $ = null
 
-describe 'Object#definitions -> $', ->
+describe 'Definitions', ->
   beforeEach ->
     $ = $new()
 
@@ -65,7 +65,7 @@ describe 'Object#definitions -> $', ->
 
     expect($('dynamicProps').value).not.toEqual $('dynamicProps').value
 
-  describe 'Object#instances', ->
+  describe 'Instances', ->
     it 'can be created directly', ->
       o = $({
         props: {
@@ -245,7 +245,7 @@ describe 'Object#definitions -> $', ->
       expect($('short', { methods: { x: -> 'y' } }).new().x()).toEqual 'y'
       expect($('args', { methods: { x: (y) -> y } }).new().x('z')).toEqual 'z'
 
-  describe 'Object#extensions', ->
+  describe 'Extensions', ->
     it 'can avoid extensions', ->
       test = null
 
@@ -361,205 +361,7 @@ describe 'Object#definitions -> $', ->
       expect(JSON.stringify(b)).toEqual '{"_global":1}'
       expect(JSON.stringify(c)).toEqual '{"_local":1}'
 
-    it 'has support for mixins', ->
-      # regular definition
-      A  = $ 'A',
-        props:
-          a:
-            b:
-              m: 'n'
-
-      # mixin container only
-      B = $('B', mixins: [
-        props: { a: { j: 'k' } }
-      ])
-
-      # raw mixin (one or more definitions)
-      C = [
-        props: { a: { b: { c: 'd' } } }
-      ]
-
-      # application
-      Sub = $('ABCD', mixins: [ A, B, C ])
-
-      s = new Sub()
-
-      # note the A mixin is not merged since it does not
-      # expose any `mixins` property or method
-      expect(s.a).toEqual { j: 'k', b: { c: 'd' } }
-
-      SubA = A({
-        name: 'thisWillFail'
-        mixins: Sub
-      })
-
-      # mixins cannot redefine methods or props
-      expect(-> new SubA()).toThrow()
-
-      SubB = B({
-        mixins: Sub
-      })
-
-      expect(SubB.new().a).toEqual { j: 'k', b: { c: 'd' } }
-
-      # mixin-calls maintain context while receiving context and arguments
-      results = []
-
-      Example = $ 'Example',
-        foo: -> @bar
-        bar: 42
-        mixins: [
-          # callbacks
-          (ctx, value) ->
-            results = []
-            results.push 'Example.fn'
-            results.push @foo?() || @props?.value || @value, ctx.value, value
-            null
-
-          # definitions will be skipped
-          {
-            mixins: ->
-              null
-          }
-
-          # nested mixins
-          [
-            (ctx, value) ->
-              results.push 'Example.nested'
-              results.push @foo?() || @props?.value || @value, ctx.value, value
-
-              # mixins can return new definitions
-              init: ->
-                results.push 'Example.nested.init'
-                results.push @foo?() || @props?.value || @value, ctx.value, value
-                null
-
-            (ctx, value) ->
-              [
-                (ctx, value) ->
-                  results.push 'Example.nested.nested'
-                  results.push @foo?() || @props?.value || @value, ctx.value, value
-                  null
-
-                # nested definitions will be skipped
-                init: ->
-                  null
-              ]
-          ]
-        ]
-
-      ExampleA = $ 'ExampleA',
-        props:
-          value: 'FOO'
-        # mixins are self-references to ExampleA
-        mixins: Example
-
-      ExampleB = $ 'ExampleB',
-        props:
-          value: 'BAR'
-        # mixins are self-references to Example
-        mixins: [Example]
-
-      expect(ExampleA.new(-1).value).toEqual 'FOO'
-      expect(results).toEqual [
-        'Example.fn'
-        'FOO'
-        'FOO'
-        -1
-        'Example.nested'
-        'FOO'
-        'FOO'
-        -1
-        'Example.nested.init'
-        'FOO'
-        'FOO'
-        -1
-        'Example.nested.nested'
-        'FOO'
-        'FOO'
-        -1
-      ]
-
-      expect(ExampleB.new(-1).value).toEqual 'BAR'
-      expect(results).toEqual [
-        'Example.fn'
-        42
-        'BAR'
-        -1
-        'Example.nested'
-        42
-        'BAR'
-        -1
-        'Example.nested.init'
-        'BAR'
-        'BAR'
-        -1
-        'Example.nested.nested'
-        42
-        'BAR'
-        -1
-      ]
-
-    it 'support mixins when creating instances', ->
-      test = null
-
-      MyMixin = $ 'Mixin',
-        mixins: ->
-          props:
-            x: 'y'
-
-      OtherMixin = $ 'Other',
-        mixins: ->
-          init: ->
-            test = 42
-            null
-
-      Mix = $ 'Mixed',
-        mixins: [
-          { props: { a: 'b' } }
-          [MyMixin, [OtherMixin]]
-        ]
-
-      mix = new Mix()
-
-      expect(test).toBe 42
-
-      expect(mix.a).toEqual 'b'
-      expect(mix.x).toEqual 'y'
-
-    it 'will merge multiple mixins at once with include', ->
-      Fixed = $ 'FixedModule',
-        mixins: -> [
-          { foo: 'bar'
-          props:
-            baz: 'buzz' }
-          -> include: [
-            { mixins:
-                a: 'b'
-                props:
-                  candy: 'does' }
-            { mixins:
-                methods:
-                  value: -> 42 }
-          ]
-        ]
-
-      Merged = $ 'MergedModule',
-        include: Fixed
-        bar: 'buzz'
-        props:
-          nothing: 'else matters'
-
-      expect(Merged.a).toEqual 'b'
-      expect(Merged.foo).toEqual 'bar'
-      expect(Merged.bar).toEqual 'buzz'
-
-      expect(new Merged().baz).toEqual 'buzz'
-      expect(new Merged().candy).toEqual 'does'
-      expect(new Merged().nothing).toEqual 'else matters'
-      expect(new Merged().value()).toEqual 42
-
-  describe 'Object#inheritance', ->
+  describe 'Inheritance', ->
     it 'attach self-references for root definitions',->
       props = {}
 
@@ -652,3 +454,122 @@ describe 'Object#definitions -> $', ->
 
       expect(Square.name).toEqual 'SquareX'
       expect(Polygon.name).toEqual 'FunkPolygon'
+
+  describe 'Including', ->
+    it 'has support for mixins', ->
+      # plain-old objects
+      A =
+        data:
+          1: '1st'
+        props:
+          foo: 'bar'
+
+      B =
+        data:
+          2: '2nd'
+        props:
+          baz: 'buzz'
+
+      # apply mixins with include to consolidate
+      C = $ 'C', include: [A, B]
+
+      # subclassing inherits consolidated definitions too
+      D = C
+        data:
+          3: '3rd'
+        props:
+          does: 'nothing'
+
+      expect(C.data).toEqual { 1: '1st', 2: '2nd' }
+      expect(C.props).toEqual { foo: 'bar', baz: 'buzz' }
+
+      expect(D.data).toEqual { 1: '1st', 2: '2nd', 3: '3rd' }
+      expect(D.props).toEqual { foo: 'bar', baz: 'buzz', does: 'nothing' }
+
+    it 'will merge foreign definitions and mixins', ->
+      result = []
+
+      mixin =
+        test:
+          value: 'OK'
+        call: ->
+          result.push 1
+          null
+        props:
+          test:
+            foo: 'bar'
+
+      Definition = $ 'Definition',
+        test:
+          thing: true
+        call: ->
+          result.push 2
+        props:
+          test:
+            baz: 'buzz'
+
+      Example = $ 'Example',
+        test:
+          value: 'YES'
+        include: [
+          mixin
+          Definition
+        ]
+
+      # root definitions
+      expect(Definition.props).toBeUndefined()
+      expect(Definition.methods).toBeUndefined()
+
+      # consolidated definitions
+      expect(Example.props).not.toBeUndefined()
+      expect(Example.methods).not.toBeUndefined()
+
+      # extended methods are called in sequence
+      expect(Example.call.name).toEqual '$chain'
+
+      expect(result).toEqual []
+
+      # will return all values
+      expect(Example.call()).toEqual [null, 2]
+
+      # will invoke both calls
+      expect(result).toEqual [1, 2]
+
+      # included definitions are not modified
+      expect(Definition.test).toEqual { thing: true }
+      expect(Definition.new().test).toEqual { baz: 'buzz' }
+
+      # included definitions are merged together
+      expect(Example.test).toEqual { value: 'YES', thing: true }
+      expect(Example.new().test).toEqual { foo: 'bar', baz: 'buzz' }
+
+    it 'will maintain context while receiving arguments', ->
+      results = []
+
+      Example = $ 'Example',
+        init: (value) ->
+          results = []
+          results.push ['Example.init', @value || value]
+
+          # initializers can return mixins too
+          init: (_value) ->
+            results.push ['Example.nested.init', @value || _value]
+            null
+
+      Example.new(-1)
+      expect(results).toEqual [['Example.init', -1], ['Example.nested.init', -1]]
+
+      ExampleWidthDefaults = $ 'ExampleWidthDefaults',
+        props:
+          value: 'FOO'
+        include: Example
+
+      expect(ExampleWidthDefaults.new(99).value).toEqual 'FOO'
+      expect(results).toEqual [['Example.init', 'FOO'], ['Example.nested.init', 'FOO']]
+
+      OverrideDefaultsFromExample = ExampleWidthDefaults
+        props:
+          value: 'OSOM'
+
+      expect(OverrideDefaultsFromExample.new(2).value).toEqual 'OSOM'
+      expect(results).toEqual [['Example.init', 'OSOM'], ['Example.nested.init', 'OSOM']]
