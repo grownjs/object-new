@@ -548,7 +548,6 @@ describe 'Definitions', ->
 
       Example = $ 'Example',
         init: (value) ->
-          results = []
           results.push ['Example.init', @value || value]
 
           # initializers can return mixins too
@@ -559,6 +558,8 @@ describe 'Definitions', ->
       Example.new(-1)
       expect(results).toEqual [['Example.init', -1], ['Example.nested.init', -1]]
 
+      results = []
+
       ExampleWidthDefaults = $ 'ExampleWidthDefaults',
         props:
           value: 'FOO'
@@ -566,6 +567,8 @@ describe 'Definitions', ->
 
       expect(ExampleWidthDefaults.new(99).value).toEqual 'FOO'
       expect(results).toEqual [['Example.init', 'FOO'], ['Example.nested.init', 'FOO']]
+
+      results = []
 
       OverrideDefaultsFromExample = ExampleWidthDefaults
         props:
