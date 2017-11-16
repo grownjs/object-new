@@ -517,8 +517,8 @@ describe 'Definitions', ->
         ]
 
       # root definitions
-      expect(Definition.props).toBeUndefined()
-      expect(Definition.methods).toBeUndefined()
+      expect(Definition.props).not.toBeUndefined()
+      expect(Definition.methods).not.toBeUndefined()
 
       # consolidated definitions
       expect(Example.props).not.toBeUndefined()
