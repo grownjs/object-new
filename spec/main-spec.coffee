@@ -490,25 +490,30 @@ describe 'Definitions', ->
       result = []
 
       mixin =
+        array: ['a']
         test:
           value: 'OK'
         call: ->
           result.push 1
           null
         props:
+          bar: [-1]
           test:
             foo: 'bar'
 
       Definition = $ 'Definition',
+        array: ['b']
         test:
           thing: true
         call: ->
           result.push 2
         props:
+          bar: [-2]
           test:
             baz: 'buzz'
 
       Example = $ 'Example',
+        array: ['c']
         test:
           value: 'YES'
         include: [
@@ -536,11 +541,15 @@ describe 'Definitions', ->
       expect(result).toEqual [1, 2]
 
       # included definitions are not modified
+      expect(Definition.array).toEqual ['b']
       expect(Definition.test).toEqual { thing: true }
+      expect(Definition.new().bar).toEqual [-2]
       expect(Definition.new().test).toEqual { baz: 'buzz' }
 
       # included definitions are merged together
+      expect(Example.array).toEqual ['a', 'b', 'c']
       expect(Example.test).toEqual { value: 'YES', thing: true }
+      expect(Example.new().bar).toEqual [-1, -2]
       expect(Example.new().test).toEqual { foo: 'bar', baz: 'buzz' }
 
     it 'will maintain context while receiving arguments', ->
