@@ -361,6 +361,24 @@ describe 'Definitions', ->
       expect(JSON.stringify(b)).toEqual '{"_global":1}'
       expect(JSON.stringify(c)).toEqual '{"_local":1}'
 
+    it 'support extend keyword as defaults', ->
+      Base = $ 'Base',
+        value: -1
+        example: 'OK'
+        methods:
+          test: -> 42
+
+      Extended = $ 'Extended',
+        extend: Base
+        value: -2
+        methods:
+          foo: -> 'bar'
+
+      expect(Extended.value).toEqual -2
+      expect(Extended.example).toEqual 'OK'
+      expect(Extended.new().foo()).toEqual 'bar'
+      expect(Extended.new().test()).toEqual 42
+
   describe 'Inheritance', ->
     it 'attach self-references for root definitions',->
       props = {}
