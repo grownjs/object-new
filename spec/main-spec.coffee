@@ -361,7 +361,7 @@ describe 'Definitions', ->
       expect(JSON.stringify(b)).toEqual '{"_global":1}'
       expect(JSON.stringify(c)).toEqual '{"_local":1}'
 
-    it 'support extend keyword as defaults', ->
+    it 'support extend keyword', ->
       Base = $ 'Base',
         value: -1
         example: 'OK'
