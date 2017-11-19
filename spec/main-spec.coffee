@@ -493,6 +493,7 @@ describe 'Definitions', ->
         array: ['a']
         test:
           value: 'OK'
+        _call: -> 'foo'
         call: ->
           result.push 1
           null
@@ -505,6 +506,7 @@ describe 'Definitions', ->
         array: ['b']
         test:
           thing: true
+        _call: -> 'bar'
         call: ->
           result.push 2
         props:
@@ -516,6 +518,7 @@ describe 'Definitions', ->
         array: ['c']
         test:
           value: 'YES'
+        _call: -> 'baz'
         include: [
           mixin
           Definition
@@ -539,6 +542,9 @@ describe 'Definitions', ->
 
       # will invoke both calls
       expect(result).toEqual [1, 2]
+
+      # _underscore methods are not chained
+      expect(Example._call()).toEqual 'baz'
 
       # included definitions are not modified
       expect(Definition.array).toEqual ['b']
