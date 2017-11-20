@@ -157,121 +157,8 @@ console.log(d.getter);
 // NaN
 ```
 
-## Mixins
-
-Additional definitions must be referentied within a `mixins` object.
-
-```js
-// regular definitions can be instantiated
-// but cannot be used as mixins, since
-// does not expose any `mixins` prop
-$('Dummy', {
-  props: {
-    value: 42,
-  },
-});
-
-// this definition can be instantiated
-// and also can be used as mixin
-$('Mixin', {
-  mixins: {
-    props: {
-      value: 42,
-      otherValue: -1,
-    },
-  },
-});
-
-$('TestDummy', {
-  // as Dummy has no mixins, it will not work as expected
-  mixins: $('Dummy'),
-
-  // however, you can access and reuse its extensions, e.g.
-  // mixins: $('Dummy').extensions,
-});
-
-console.log($('Dummy').new().value);
-console.log($('TestDummy').new().value);
-// 42
-// undefined
-
-$('TestMixin', {
-  props: {
-    imFeelingLucky: () => Math.random() > 0.5,
-  },
-  mixins: [
-    // modules works perfect here,
-    // they are detected and unrolled
-    $('Mixin'),
-
-    // while unrolling, functions have higher relevance than objects
-    // so this mixin will not override anything from Mixin above
-    // but it will still able to add new props or methods
-    { props: { value: 1, _hidden: true } },
-
-    // to override Mixin things just pass a function, e.g.
-    () => ({
-      props: {
-        otherValue: 99,
-        get isHidden() { return this._hidden; },
-      }
-    }),
-
-    // functions can receive the instance context as `this`,
-    // also all given arguments from constructor are received
-    function(someValue) {
-      // falsy values are just ignored from the initialization chain
-      return someValue && {
-        props: {
-          otherValue: this.imFeelingLucky ? -99 : someValue,
-        },
-      };
-    },
-  ],
-});
-
-console.log($('Mixin').new().value);
-console.log($('TestMixin').new().value);
-console.log($('TestMixin').new()._hidden);
-console.log($('TestMixin').new().isHidden);
-console.log($('TestMixin').new().otherValue);
-console.log($('TestMixin').new(-1).otherValue);
-// 42
-// 42
-// true
-// true
-// 99
-// -99 or -1 (randomly)
-```
-
-Mixins can return other mixins, or more definitions, they will be resolved and merged recursively.
-
-```js
-$('Dummy', {
-  mixins: [
-    { props: { value: 42, } },
-    [
-      () => ({ init() { this._value = -1; } }),
-      [
-        $('InPlace', {
-          mixins: () => ({ props: { otherValue: 99 } }),
-        }),
-      ],
-    ],
-  ],
-});
-
-const d = $('Dummy').new();
-
-console.log(d.value);
-console.log(d._value);
-console.log(d.otherValue);
-// 42
-// -1
-// 99
-```
-
-Perhaps the `mixins()` method works exactly like `init()` but there's a key difference: mixins can be referenced and executed from host instances.
+> Properties starting with `_` will be set as non enumerable on the created instances.
+> However, static properties are always set as enumerable.
 
 ## Methods
 
@@ -306,6 +193,9 @@ $('Dummy', {
 $('Dummy').sayHi();
 // Hello world!
 ```
+
+> Methods starting with `_` will be set as non enumerable on the created instances.
+> However, static methods are always set as enumerable.
 
 ## Extensions
 
@@ -476,3 +366,234 @@ console.log(new Branch().value);
 // 456
 // -2
 ```
+
+## Composition
+
+Additional mixins from `include` will be merged into the definition.
+
+```js
+// regular definitions store
+// its mixins as extensions
+$('Dummy', {
+  props: {
+    value: 42,
+  },
+});
+
+console.log($('Dummy').props);
+console.log($('Dummy').extensions);
+// {}
+// [ { props: { value: 42 } } ]
+
+// any included mixin will be
+// merged with the definition itself
+$('FixedDummy', {
+  props: {
+    value: 99,
+  },
+  include: {
+    props: {
+      otherValue: -1,
+    },
+  },
+});
+
+console.log($('FixedDummy').props);
+console.log($('FixedDummy').extensions);
+// { otherValue: -1, value: 99 }
+// [ { props: { value: 99 } } ]
+
+$('TestDummy', {
+  // definition will be merged
+  include: $('Dummy'),
+});
+
+console.log($('Dummy').new().value);
+console.log($('TestDummy').new().value);
+// 42
+// 42
+
+$('TestMixin', {
+  props: {
+    imFeelingLucky: () => Math.random() > 0.5,
+  },
+  include: [
+    // modules works perfect here,
+    // they are detected and unrolled
+    $('FixedDummy'),
+
+    // they can receive overrides from mixins
+    [
+      { props: { otherValue: 0 } },
+
+      // and from other definitions' mixins
+      $('AnotherThing', {
+        props: {
+          otherValue: 2,
+        },
+      }),
+
+      // functions are used for extend the instance
+      // so, they can't redefine props/methods
+      // () => ({ props: { otherValue: 3 } }),
+    ],
+
+    // while unrolling, definitions have higher relevance
+    { props: { value: 1, _hidden: true } },
+
+    // override things on the FixedDummy during instantiation, e.g.
+    () => ({
+      props: {
+        fixedValue: 99,
+        get isHidden() { return this._hidden; },
+      }
+    }),
+
+    // functions can receive the instance context as `this`,
+    // also all given arguments from constructor are received
+    function(someValue) {
+      // falsy values are just ignored from the initialization chain
+      return someValue && {
+        props: {
+          fixedValue: this.imFeelingLucky ? -99 : someValue,
+        },
+      };
+    },
+  ],
+});
+
+console.log($('FixedDummy').new().value);
+console.log($('TestMixin').new().value);
+console.log($('TestMixin').new()._hidden);
+console.log($('TestMixin').new().isHidden);
+console.log($('TestMixin').new().otherValue);
+console.log($('TestMixin').new().fixedValue);
+console.log($('TestMixin').new(-1).otherValue);
+console.log($('TestMixin').new(-1).fixedValue);
+// 99
+// 1
+// true
+// true
+// 2
+// 99
+// 2
+// -99 or -1 (randomly)
+```
+
+Mixins can return other mixins, or more definitions, they will be resolved and merged recursively.
+
+```js
+$('Dummy', {
+  include: [
+    { props: { value: 42, } },
+    [
+      () => ({ init() { this._value = -1; } }),
+      [
+        $('InPlace', {
+          include: () => ({ props: { otherValue: 99 } }),
+        }),
+      ],
+    ],
+  ],
+});
+
+const d = $('Dummy').new();
+
+console.log(d.value);
+console.log(d._value);
+console.log(d.otherValue);
+// 42
+// -1
+// 99
+```
+
+Included methods from mixins will be chained together.
+
+```js
+$('Dummy', {
+  test() {
+    return 1;
+  },
+  methods: {
+    test() {
+      return -1;
+    },
+  },
+});
+
+console.log($('Dummy').test());
+console.log($('Dummy').new().test());
+// 1
+// 1
+
+$('FixedDummy', {
+  include: [$('Dummy')],
+  test() {
+    return 2;
+  },
+  methods: {
+    test() {
+      return -2;
+    },
+  },
+});
+
+// merged methods always return
+// an array of non-undefined values
+console.log($('FixedDummy').test());
+console.log($('FixedDummy').new().test());
+// [1, 2]
+// [-1, -2]
+```
+
+> Props, methods or arrays starting with `_` will not be merged this way.
+
+Another way of compositing is through the `extend` keyword.
+
+```js
+const Dummy = $('Dummy', {
+  init() {
+    throw new Error('Not implemented');
+  },
+});
+
+Dummy.new();
+// Error: Not implemented
+
+const Example = $('Example', {
+  // one or more mixins/definitions
+  extend: Dummy,
+  init() {
+    console.log(42);
+  },
+});
+
+Example.new();
+console.log(Dummy.extensions.length);
+console.log(Example.extensions.length);
+// 42
+// 1
+// 1
+
+// the same result could be achieved with subclassing
+// at the cost of adding the given definition as extension
+const ExampleWithoutExtend = $('Example', {
+  init() {
+    console.log(42);
+
+    // this cost also comes with the `super` support here, e.g.
+    // calling `this.super.init()` will throw the error from above
+  },
+});
+
+ExampleWithoutExtend.new();
+console.log(Example.extensions.length);
+console.log(ExampleWithoutExtend.extensions.length);
+console.log(Example === ExampleWithoutExtend);
+// 42
+// 2
+// 2
+// true
+```
+
+However, the main advantage from `extend` over subclassing is that you can inherit from any foreign mixin or definition, etc.
