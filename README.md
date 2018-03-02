@@ -507,32 +507,32 @@ console.log(d.otherValue);
 // 99
 ```
 
-Included methods from mixins will be chained together.
+Included methods from mixins will be chained together if they're prefixed with `$`.
 
 ```js
 $('Dummy', {
-  test() {
+  $test() {
     return 1;
   },
   methods: {
-    test() {
+    $test() {
       return -1;
     },
   },
 });
 
-console.log($('Dummy').test());
-console.log($('Dummy').new().test());
+console.log($('Dummy').$test());
+console.log($('Dummy').new().$test());
 // 1
-// 1
+// -1
 
 $('FixedDummy', {
   include: [$('Dummy')],
-  test() {
+  $test() {
     return 2;
   },
   methods: {
-    test() {
+    $test() {
       return -2;
     },
   },
@@ -540,13 +540,13 @@ $('FixedDummy', {
 
 // merged methods always return
 // an array of non-undefined values
-console.log($('FixedDummy').test());
-console.log($('FixedDummy').new().test());
+console.log($('FixedDummy').$test());
+console.log($('FixedDummy').new().$test());
 // [1, 2]
 // [-1, -2]
 ```
 
-> Props, methods or arrays starting with `_` will not be merged this way.
+> Props, methods or arrays starting with `_` will not be enumerable.
 
 Another way of compositing is through the `extend` keyword.
 
