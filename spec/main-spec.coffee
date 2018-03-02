@@ -181,7 +181,8 @@ describe 'Definitions', ->
           foo: -> 42
       })
 
-      expect(-> m.foo = null).toThrow()
+      # allow this for stubbing
+      expect(-> m.foo = null).not.toThrow()
 
     it 'can define properties', ->
       # properties are always called as getters regardless of its arguments
@@ -512,7 +513,7 @@ describe 'Definitions', ->
         test:
           value: 'OK'
         _call: -> 'foo'
-        call: ->
+        $call: ->
           result.push 1
           null
         props:
@@ -525,7 +526,7 @@ describe 'Definitions', ->
         test:
           thing: true
         _call: -> 'bar'
-        call: ->
+        $call: ->
           result.push 2
         props:
           bar: [-2]
@@ -551,12 +552,12 @@ describe 'Definitions', ->
       expect(Example.methods).not.toBeUndefined()
 
       # extended methods are called in sequence
-      expect(Example.call.name).toEqual '$chain'
+      expect(Example.$call.name).toEqual '$chain'
 
       expect(result).toEqual []
 
       # will return all values
-      expect(Example.call()).toEqual [null, 2]
+      expect(Example.$call()).toEqual [null, 2]
 
       # will invoke both calls
       expect(result).toEqual [1, 2]
