@@ -209,6 +209,10 @@ describe 'Definitions', ->
       expect(-> o.readonly = 'NO').toThrow()
       expect(o.readonly).toEqual 'CHANGED'
 
+      # cannot delete readonly-props
+      delete o.readonly
+      expect(o.readonly).toEqual 'CHANGED'
+
     it 'can define instance props with getters/setters', ->
       o = $(eval('''({
           props: {
@@ -266,6 +270,8 @@ describe 'Definitions', ->
       expect(Object.keys($('foo'))).toEqual ['bar', 'buzz', 'bazzinga']
 
     it 'can copy complex values, e.g. RegExp/Date', ->
+      someObject = foo: 'bar'
+
       time = new Date()
 
       Top = $ 'Top',
@@ -273,6 +279,7 @@ describe 'Definitions', ->
           str: 'OK'
           regex: /x/gmi
           timestamp: time
+          someArray: [nested: someObject]
 
       Sub = Top
         opts:
@@ -280,6 +287,10 @@ describe 'Definitions', ->
 
       Top.opts.timestamp.setTime(0)
       expect(Top.opts.timestamp.getTime()).toEqual 0
+
+      # nested props are copied too
+      someObject.foo = 42
+      expect(Top.opts.someArray[0].nested.foo).toEqual 'bar'
 
       expect(Sub.opts.str).toEqual 'OSOM'
       # note the regex-flags aren't in order, but it's still valid
@@ -489,8 +500,18 @@ describe 'Definitions', ->
         props:
           baz: 'buzz'
 
+        # nested definitions are copied as-is
+        Nested:
+          Object:
+            is: 'here'
+
       # apply mixins with include to consolidate
-      C = $ 'C', include: [A, B]
+      C = $ 'C', include: [
+        A, B,
+
+        # given functions are treated as mixins
+        -> props: truth: 42
+      ]
 
       # subclassing inherits consolidated definitions too
       D = C
@@ -499,11 +520,39 @@ describe 'Definitions', ->
         props:
           does: 'nothing'
 
+        # falsy descriptors are just ignored
+        extend: [null, ->]
+        include: [
+          null
+          props: fooBar: -> 'baz'
+
+          # nested functions are always treated mixins
+          -> methods: isTruth: -> -42
+          -> -> props: somethingElse: 'TEST'
+        ]
+
+      expect(D.new().truth).toEqual 42
+      expect(D.new().fooBar).toEqual 'baz'
+      expect(D.new().isTruth()).toEqual -42
+      expect(D.new().somethingElse).toEqual 'TEST'
+
+      # extensions within mixins are disallowed
+      expect(-> D include: extensions: {}).toThrow()
+
+      expect(D.new().truth).toEqual 42
+      expect(D.Nested.Object.is).toEqual 'here'
+
       expect(C.data).toEqual { 1: '1st', 2: '2nd' }
-      expect(C.props).toEqual { foo: 'bar', baz: 'buzz' }
+      expect(C.props.foo).toEqual 'bar'
+      expect(C.props.baz).toEqual 'buzz'
+      expect(C.props.truth).toEqual 42
 
       expect(D.data).toEqual { 1: '1st', 2: '2nd', 3: '3rd' }
-      expect(D.props).toEqual { foo: 'bar', baz: 'buzz', does: 'nothing' }
+      expect(D.props.foo).toEqual 'bar'
+      expect(D.props.baz).toEqual 'buzz'
+      expect(D.props.does).toEqual 'nothing'
+      expect(D.props.truth).toEqual 42
+      expect(D.props.fooBar).toEqual D.props.fooBar
 
     it 'will merge foreign definitions and mixins', ->
       result = []
@@ -538,6 +587,8 @@ describe 'Definitions', ->
         test:
           value: 'YES'
         _call: -> 'baz'
+        $call: ->
+          result.push 3
         include: [
           mixin
           Definition
@@ -557,10 +608,10 @@ describe 'Definitions', ->
       expect(result).toEqual []
 
       # will return all values
-      expect(Example.$call()).toEqual [null, 2]
+      expect(Example.$call()).toEqual [null, 2, 3]
 
       # will invoke both calls
-      expect(result).toEqual [1, 2]
+      expect(result).toEqual [1, 2, 3]
 
       # _underscore methods are not chained
       expect(Example._call()).toEqual 'baz'
