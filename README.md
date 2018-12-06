@@ -1,6 +1,8 @@
 # Object.new()
 
+[![NPM version](https://badge.fury.io/js/object-new.png)](http://badge.fury.io/js/object-new)
 [![travis-ci](https://api.travis-ci.org/pateketrueke/object-new.svg)](https://travis-ci.org/pateketrueke/object-new) [![codecov](https://codecov.io/gh/pateketrueke/object-new/branch/master/graph/badge.svg)](https://codecov.io/gh/pateketrueke/object-new)
+[![codecov](https://codecov.io/gh/pateketrueke/object-new/branch/master/graph/badge.svg)](https://codecov.io/gh/pateketrueke/object-new)
 
 Experimental DSL for module definitions.
 

@@ -4,22 +4,32 @@
   "description": "Object.new() infection!",
   "main": "lib/index.js",
   "scripts": {
-    "dev": "jasmine-node spec --coffee --verbose --autoTest --watchFolders lib",
-    "lint": "eslint lib",
-    "spec": "jasmine-node spec --coffee --noStackTrace --captureExceptions",
-    "cover": "istanbul cover --root lib --x '**/spec/**' -- jasmine-node --coffee spec",
-    "cover:up": "codecov --file=coverage/lcov.info --disable=gcov -e TRAVIS_NODE_VERSION",
-    "test": "npm run lint && npm run spec"
+    "dev": "npm test -- -w",
+    "lint": "eslint bin lib tests",
+    "test": "npm run test:unit --",
+    "test:ci": "npm run coverage:all && npm run report -- -r lcov",
+    "test:all": "npm run test:run tests && npm run report -- -r html",
+    "test:run": "NODE_ENV=test _mocha --exit --recursive -bR spec",
+    "test:unit": "npm run test:run tests --",
+    "coverage": "nyc -x '**/tests/**' -x '**/*.test.js'",
+    "coverage:all": "npm run coverage -- npm run test:all",
+    "coverage:unit": "npm run coverage -- npm run test:unit",
+    "codecov": "codecov --file=coverage/lcov.info -e TRAVIS_NODE_VERSION",
+    "report": "nyc report",
+    "pretest": "npm run lint"
   },
   "author": "Alvaro Cabrera <pateketrueke@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "chai": "^4.2.0",
     "codecov": "^3.0.0",
-    "eslint": "^4.10.0",
-    "istanbul": "^0.4.3",
-    "jasmine-node": "2.0.0-beta4"
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "mocha": "^5.2.0",
+    "nyc": "^13.1.0"
   },
   "dependencies": {
-    "debug": "^3.1.0"
+    "debug": "^4.1.0"
   }
 }

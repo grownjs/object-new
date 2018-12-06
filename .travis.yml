@@ -1,11 +1,11 @@
 language: node_js
 node_js:
-  - 4
   - 6
-  - 7
+  - 9
+  - 11
 script:
-  - 'npm run cover'
+  - 'npm run test:ci'
 after_success:
-  - 'npm run cover:up'
+  - 'npm run codecov'
 notifications:
   email: false
