@@ -22,12 +22,16 @@
   "license": "MIT",
   "devDependencies": {
     "chai": "^4.2.0",
-    "codecov": "^3.1.0",
+    "codecov": ">=3.7.1",
+    "lodash": ">=4.17.21",
     "eslint": "^7.0.0",
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-import": "^2.14.0",
+    "hosted-git-info": ">=2.8.9",
+    "node-fetch": ">=2.6.1",
     "mocha": "^7.1.2",
-    "nyc": "^15.0.1"
+    "nyc": "^15.0.1",
+    "y18n": ">=4.0.1"
   },
   "dependencies": {
     "debug": "^4.1.0"
