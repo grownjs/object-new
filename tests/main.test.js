@@ -525,6 +525,13 @@ describe('Definitions', () => {
       expect(JSON.stringify(c)).to.eql('{"_local":1}');
     });
 
+    it('has support for constructor', () => {
+      const TEST = $('TEST');
+      const test = new TEST();
+
+      expect(test.constructor).to.eql(TEST);
+    });
+
     it('support extend keyword', () => {
       const Base = $('Base', {
         value: -1,
